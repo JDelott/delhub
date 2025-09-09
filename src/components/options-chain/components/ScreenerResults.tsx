@@ -26,15 +26,15 @@ const ElectricCheckbox = ({
       className={`
         w-5 h-5 rounded border-2 cursor-pointer transition-all duration-200 relative
         ${checked 
-          ? 'bg-gradient-to-br from-cyan-400 to-violet-500 border-cyan-400 shadow-lg shadow-cyan-400/25' 
-          : 'bg-slate-800/50 border-slate-600 hover:border-slate-500'
+          ? 'bg-blue-600 border-blue-600 shadow-sm' 
+          : 'bg-white border-gray-300 hover:border-blue-400'
         }
       `}
     >
       {checked && (
         <div className="absolute inset-0 flex items-center justify-center">
           <svg 
-            className="w-3 h-3 text-slate-900 font-bold" 
+            className="w-3 h-3 text-white font-bold" 
             fill="currentColor" 
             viewBox="0 0 20 20"
           >
@@ -45,9 +45,6 @@ const ElectricCheckbox = ({
             />
           </svg>
         </div>
-      )}
-      {checked && (
-        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400/20 to-violet-500/20 rounded-lg blur animate-pulse"></div>
       )}
     </div>
   </div>
@@ -72,14 +69,14 @@ export default function ScreenerResults({
 }: ScreenerResultsProps) {
   if (!screenerResults?.results || screenerResults.results.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="text-slate-400 mb-2">
-          <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      <div className="text-center py-12">
+        <div className="text-gray-400 mb-4">
+          <svg className="w-16 h-16 mx-auto mb-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-slate-300 mb-2">No Results Found</h3>
-        <p className="text-slate-500">
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">No Results Found</h3>
+        <p className="text-gray-600">
           No stocks found matching your screening criteria. Try adjusting your filters.
         </p>
       </div>
@@ -97,24 +94,24 @@ export default function ScreenerResults({
       {/* Header with selection info */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold text-slate-100">
+          <h2 className="text-2xl font-bold text-gray-900">
             Screening Results ({screenerResults.results.length} stocks)
           </h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-gray-600 mt-1">
             Found {totalOptionsFound} matching {optionType} across all stocks
           </p>
         </div>
         <div className="flex items-center gap-4">
           {totalSelected > 0 && (
-            <div className="px-3 py-1.5 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 rounded-lg">
-              <span className="text-sm font-medium text-cyan-400">
+            <div className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <span className="text-sm font-semibold text-blue-700">
                 {totalSelected} selected for batch trading
               </span>
             </div>
           )}
           <button
             onClick={onDownloadPDF}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded-lg transition-colors text-sm font-medium border border-slate-600/50"
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium border border-gray-300"
           >
             Export PDF
           </button>
@@ -129,13 +126,13 @@ export default function ScreenerResults({
         if (optionsToShow.length === 0) return null;
         
         return (
-          <div key={stockIdx} className="bg-slate-900/50 rounded-xl border border-slate-700/50 p-6">
+          <div key={stockIdx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-slate-200">
+                <h3 className="text-xl font-bold text-gray-900">
                   {result.symbol}
                 </h3>
-                <div className="flex gap-4 text-sm text-slate-400">
+                <div className="flex gap-4 text-sm text-gray-600 mt-1">
                   <span>Stock: {result.stockPrice ? formatCurrency(result.stockPrice) : 'N/A'}</span>
                   <span>Vol: {result.averageVolume ? 
                     `${(result.averageVolume / 1000000).toFixed(1)}M` : 'N/A'}</span>
@@ -144,7 +141,7 @@ export default function ScreenerResults({
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-medium text-cyan-400">
+                <div className="text-sm font-semibold text-blue-600">
                   Top {optionsToShow.length} {optionType === 'puts' ? 'Puts' : 'Calls'}
                 </div>
               </div>
@@ -154,8 +151,8 @@ export default function ScreenerResults({
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-slate-400 border-b border-slate-700/50">
-                      <th className="text-center py-2 w-8">
+                    <tr className="text-gray-600 border-b border-gray-200">
+                      <th className="text-center py-3 w-8">
                         <ElectricCheckbox
                           checked={optionsToShow.every(option => 
                             selectedOptions.has(generateOptionId(result.symbol, option, optionType === 'puts' ? 'put' : 'call'))
@@ -180,14 +177,14 @@ export default function ScreenerResults({
                           }}
                         />
                       </th>
-                      <th className="text-left py-2">Strike</th>
-                      <th className="text-left py-2">vs Stock</th>
-                      <th className="text-left py-2">Bid</th>
-                      <th className="text-left py-2">Ask</th>
-                      <th className="text-left py-2">Spread</th>
-                      <th className="text-left py-2">Volume</th>
-                      <th className="text-left py-2">Expiration</th>
-                      <th className="text-center py-2">Actions</th>
+                      <th className="text-left py-3 font-semibold">Strike</th>
+                      <th className="text-left py-3 font-semibold">vs Stock</th>
+                      <th className="text-left py-3 font-semibold">Bid</th>
+                      <th className="text-left py-3 font-semibold">Ask</th>
+                      <th className="text-left py-3 font-semibold">Spread</th>
+                      <th className="text-left py-3 font-semibold">Volume</th>
+                      <th className="text-left py-3 font-semibold">Expiration</th>
+                      <th className="text-center py-3 font-semibold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,10 +193,10 @@ export default function ScreenerResults({
                       const isSelected = selectedOptions.has(optionId);
                       
                       return (
-                        <tr key={idx} className={`border-b border-slate-800/30 last:border-b-0 transition-all duration-200 ${
+                        <tr key={idx} className={`border-b border-gray-100 last:border-b-0 transition-all duration-200 ${
                           isSelected 
-                            ? 'bg-gradient-to-r from-cyan-500/5 to-violet-500/5 border-l-2 border-l-cyan-400' 
-                            : 'hover:bg-slate-800/30'
+                            ? 'bg-blue-50 border-l-4 border-l-blue-500' 
+                            : 'hover:bg-gray-50'
                         }`}>
                           <td className="py-2 text-center">
                             <ElectricCheckbox
@@ -207,40 +204,40 @@ export default function ScreenerResults({
                               onChange={() => onToggleOptionSelection(result.symbol, option, optionType === 'puts' ? 'put' : 'call')}
                             />
                           </td>
-                          <td className="py-2 text-slate-100 font-medium">
+                          <td className="py-3 text-gray-900 font-semibold">
                             {formatCurrency(option.strike)}
                           </td>
-                          <td className={`py-2 text-xs ${
+                          <td className={`py-3 text-xs font-medium ${
                             optionType === 'puts' 
-                              ? 'text-red-400' 
+                              ? 'text-red-600' 
                               : result.stockPrice && option.strike > result.stockPrice 
-                                ? 'text-red-400' 
-                                : 'text-green-400'
+                                ? 'text-red-600' 
+                                : 'text-green-600'
                           }`}>
                             {result.stockPrice ? 
                               `${((option.strike - result.stockPrice) / result.stockPrice * 100).toFixed(1)}%` 
                               : 'N/A'
                             }
                           </td>
-                          <td className="py-2 text-green-400 font-medium">
+                          <td className="py-3 text-green-600 font-semibold">
                             {formatCurrency(option.bid)}
                           </td>
-                          <td className="py-2 text-red-400 font-medium">
+                          <td className="py-3 text-red-600 font-semibold">
                             {formatCurrency(option.ask)}
                           </td>
-                          <td className="py-2 text-slate-300">
+                          <td className="py-3 text-gray-700 font-medium">
                             {formatCurrency(option.bidAskSpread)}
                           </td>
-                          <td className="py-2 text-slate-400">
+                          <td className="py-3 text-gray-600">
                             {option.volume?.toLocaleString() || '0'}
                           </td>
-                          <td className="py-2 text-slate-400 text-xs">
+                          <td className="py-3 text-gray-600 text-xs">
                             {formatDate(option.expirationDate)}
                           </td>
-                          <td className="py-2 text-center">
+                          <td className="py-3 text-center">
                             <button
                               onClick={() => onOpenTradeModal(result.symbol, option, optionType === 'puts' ? 'put' : 'call', result.stockPrice)}
-                              className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-purple-600/20 hover:from-violet-600/30 hover:to-purple-600/30 text-violet-400 border border-violet-500/30 rounded-md text-xs font-medium transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/10"
+                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
                             >
                               Trade
                             </button>

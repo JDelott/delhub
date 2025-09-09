@@ -47,8 +47,8 @@ export default function SingleStockControls({
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-5 gap-6">
         <div className="col-span-2 space-y-2">
-          <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             Stock Symbol
           </label>
           <input
@@ -56,13 +56,13 @@ export default function SingleStockControls({
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             placeholder="Enter symbol (e.g., AAPL, TSLA)"
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           />
         </div>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Strike Distance</label>
+          <label className="text-sm font-semibold text-gray-700">Strike Distance</label>
           <div 
             className="relative group cursor-pointer"
             onClick={() => {
@@ -167,14 +167,14 @@ export default function SingleStockControls({
         </div>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Min Bid ($)</label>
+          <label className="text-sm font-semibold text-gray-700">Min Bid ($)</label>
           <input
             type="number"
             step="0.01"
             min="0"
             value={minBid}
             onChange={(e) => setMinBid(Number(e.target.value))}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           />
         </div>
@@ -183,11 +183,11 @@ export default function SingleStockControls({
       {/* Expiration Selector for Single Stock */}
       {expirations.length > 0 && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Expiration Date</label>
+          <label className="text-sm font-semibold text-gray-700">Expiration Date</label>
           <select
             value={selectedExpiration}
             onChange={(e) => setSelectedExpiration(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           >
             {expirations.map(date => (
@@ -199,13 +199,20 @@ export default function SingleStockControls({
         </div>
       )}
 
-      <div className="flex justify-start pt-2">
+      <div className="flex justify-start pt-4">
         <button
           type="submit"
           disabled={loading || !symbol.trim()}
-          className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 disabled:cursor-not-allowed"
+          className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed"
         >
-          {loading ? 'Analyzing...' : 'Analyze Options'}
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Analyzing...
+            </div>
+          ) : (
+            'Analyze Options'
+          )}
         </button>
       </div>
     </form>

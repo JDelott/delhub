@@ -62,8 +62,8 @@ export default function ScreenerControls({
       <div className="grid grid-cols-4 gap-5">
         {/* Expiration Filter */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             Time Horizon
           </label>
           <div 
@@ -73,13 +73,13 @@ export default function ScreenerControls({
               dropdown?.classList.toggle('hidden');
             }}
           >
-            <div className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 hover:border-cyan-400/60 hover:bg-slate-900/70 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/10">
+            <div className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="font-medium">
                   {expirationFilter === 'all' ? 'All Timeframes' :
                    expirationFilter === 'near' ? 'Short Term (30 days or less)' : 'Long Term (more than 30 days)'}
                 </span>
-                <svg className="w-4 h-4 text-cyan-400 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -87,7 +87,7 @@ export default function ScreenerControls({
             
             <div 
               id="expiration-dropdown"
-              className="hidden absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-xl border border-slate-700/60 rounded-xl overflow-hidden z-50 shadow-2xl shadow-cyan-500/10"
+              className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg overflow-hidden z-50 shadow-lg"
             >
               {[
                 { value: 'all', label: 'All Timeframes', desc: 'Every available expiration date' },
@@ -98,16 +98,16 @@ export default function ScreenerControls({
                   key={option.value}
                   className={`px-4 py-3 cursor-pointer transition-all duration-200 ${
                     expirationFilter === option.value 
-                      ? 'bg-cyan-500/15 text-cyan-100 border-l-4 border-cyan-400' 
-                      : 'hover:bg-slate-800/60 border-l-4 border-transparent hover:border-cyan-500/30'
+                      ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-500' 
+                      : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-blue-300'
                   }`}
                   onClick={() => {
                     setExpirationFilter(option.value as 'all' | 'near' | 'far');
                     document.getElementById('expiration-dropdown')?.classList.add('hidden');
                   }}
                 >
-                  <div className="font-medium text-slate-100">{option.label}</div>
-                  <div className="text-xs text-slate-400 mt-1">{option.desc}</div>
+                  <div className="font-medium text-gray-900">{option.label}</div>
+                  <div className="text-xs text-gray-600 mt-1">{option.desc}</div>
                 </div>
               ))}
             </div>
@@ -116,8 +116,8 @@ export default function ScreenerControls({
 
         {/* Price Filter */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-violet-400 rounded-full"></div>
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             Price Range
           </label>
           <div 
@@ -234,24 +234,31 @@ export default function ScreenerControls({
           <button
             onClick={onRunScreener}
             disabled={loading}
-            className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed"
           >
-            {loading ? 'Scanning...' : 'Run Screen'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Scanning...
+              </div>
+            ) : (
+              'Run Screen'
+            )}
           </button>
         </div>
       </div>
       
       {/* Parameters Row - Update to 6 columns to include strike range */}
-      <div className="grid grid-cols-6 gap-4 pt-4 border-t border-slate-800/40">
+      <div className="grid grid-cols-6 gap-4 pt-6 border-t border-gray-200">
         {/* Custom Symbols */}
         <div className="col-span-2 space-y-2">
-          <label className="text-sm font-medium text-slate-400">Custom Symbols (optional)</label>
+          <label className="text-sm font-semibold text-gray-700">Custom Symbols (optional)</label>
           <input
             type="text"
             value={customSymbols}
             onChange={(e) => setCustomSymbols(e.target.value)}
             placeholder="AAPL, TSLA, MSFT, GOOGL..."
-            className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           />
         </div>
@@ -322,14 +329,14 @@ export default function ScreenerControls({
         
         {/* Max Price */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Max Price ($)</label>
+          <label className="text-sm font-semibold text-gray-700">Max Price ($)</label>
           <input
             type="number"
             step="0.01"
             min="0"
             value={maxStockPrice}
             onChange={(e) => setMaxStockPrice(Number(e.target.value))}
-            className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           />
         </div>
@@ -445,14 +452,14 @@ export default function ScreenerControls({
         
         {/* Min Bid */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Min Bid ($)</label>
+          <label className="text-sm font-semibold text-gray-700">Min Bid ($)</label>
           <input
             type="number"
             step="0.01"
             min="0"
             value={minBid}
             onChange={(e) => setMinBid(Number(e.target.value))}
-            className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all"
+            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
             disabled={loading}
           />
         </div>

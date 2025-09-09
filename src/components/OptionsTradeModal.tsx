@@ -91,20 +91,20 @@ export default function OptionsTradeModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-gray-300 rounded-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">
+            <h2 className="text-2xl font-bold text-gray-900">
               Trade {optionType.toUpperCase()} Option
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-gray-600 mt-1">
               {symbol} ${option.strike} {formatDate(option.expirationDate)}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -113,31 +113,31 @@ export default function OptionsTradeModal({
         </div>
 
         {/* Option Details */}
-        <div className="bg-slate-800/50 rounded-lg p-4 mb-6">
+        <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-slate-400">Strike Price:</span>
-              <div className="font-medium text-slate-100">{formatCurrency(option.strike)}</div>
+              <span className="text-gray-600">Strike Price:</span>
+              <div className="font-semibold text-gray-900">{formatCurrency(option.strike)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Stock Price:</span>
-              <div className="font-medium text-slate-100">{formatCurrency(stockPrice)}</div>
+              <span className="text-gray-600">Stock Price:</span>
+              <div className="font-semibold text-gray-900">{formatCurrency(stockPrice)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Bid:</span>
-              <div className="text-green-400 font-medium">{formatCurrency(option.bid)}</div>
+              <span className="text-gray-600">Bid:</span>
+              <div className="text-green-600 font-semibold">{formatCurrency(option.bid)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Ask:</span>
-              <div className="text-red-400 font-medium">{formatCurrency(option.ask)}</div>
+              <span className="text-gray-600">Ask:</span>
+              <div className="text-red-600 font-semibold">{formatCurrency(option.ask)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Volume:</span>
-              <div className="font-medium text-slate-100">{option.volume.toLocaleString()}</div>
+              <span className="text-gray-600">Volume:</span>
+              <div className="font-semibold text-gray-900">{option.volume.toLocaleString()}</div>
             </div>
             <div>
-              <span className="text-slate-400">Open Interest:</span>
-              <div className="font-medium text-slate-100">{option.openInterest?.toLocaleString() || 'N/A'}</div>
+              <span className="text-gray-600">Open Interest:</span>
+              <div className="font-semibold text-gray-900">{option.openInterest?.toLocaleString() || 'N/A'}</div>
             </div>
           </div>
         </div>
@@ -146,24 +146,24 @@ export default function OptionsTradeModal({
         <div className="space-y-4 mb-6">
           {/* Buy/Sell Toggle */}
           <div>
-            <label className="text-sm font-medium text-slate-300 block mb-2">Action</label>
-            <div className="flex bg-slate-800/50 rounded-lg p-1">
+            <label className="text-sm font-semibold text-gray-700 block mb-2">Action</label>
+            <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setAction('buy')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
                   action === 'buy'
-                    ? 'bg-green-500 text-white'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-green-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Buy to Open
               </button>
               <button
                 onClick={() => setAction('sell')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
                   action === 'sell'
-                    ? 'bg-red-500 text-white'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Sell to Open
@@ -173,19 +173,19 @@ export default function OptionsTradeModal({
 
           {/* Number of Contracts */}
           <div>
-            <label className="text-sm font-medium text-slate-300 block mb-2">Contracts</label>
+            <label className="text-sm font-semibold text-gray-700 block mb-2">Contracts</label>
             <input
               type="number"
               min="1"
               value={contracts}
               onChange={(e) => setContracts(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
             />
           </div>
 
           {/* Order Type */}
           <div>
-            <label className="text-sm font-medium text-slate-300 block mb-2">Order Type</label>
+            <label className="text-sm font-semibold text-gray-700 block mb-2">Order Type</label>
             <select
               value={orderType}
               onChange={(e) => {
@@ -193,7 +193,7 @@ export default function OptionsTradeModal({
                 setOrderType(newOrderType);
                 setPremium(newOrderType === 'MARKET' ? (option.bid + option.ask) / 2 : option.bid);
               }}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
             >
               <option value="LIMIT">Limit Order</option>
               <option value="MARKET">Market Order</option>
@@ -202,7 +202,7 @@ export default function OptionsTradeModal({
 
           {/* Premium */}
           <div>
-            <label className="text-sm font-medium text-slate-300 block mb-2">
+            <label className="text-sm font-semibold text-gray-700 block mb-2">
               Premium per Contract ($)
             </label>
             <input
@@ -212,35 +212,35 @@ export default function OptionsTradeModal({
               value={premium}
               onChange={(e) => setPremium(parseFloat(e.target.value) || 0)}
               disabled={orderType === 'MARKET'}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-100 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none disabled:opacity-50"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:opacity-50 disabled:bg-gray-100"
             />
             {orderType === 'MARKET' && (
-              <p className="text-xs text-slate-500 mt-1">Market orders use mid-price</p>
+              <p className="text-xs text-gray-600 mt-1">Market orders use mid-price</p>
             )}
           </div>
         </div>
 
         {/* Trade Summary */}
-        <div className="bg-slate-800/30 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-medium text-slate-300 mb-3">Trade Summary</h3>
+        <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+          <h3 className="text-sm font-semibold text-blue-900 mb-3">Trade Summary</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-slate-400">Total Cost:</span>
-              <span className="font-medium text-slate-100">{formatCurrency(totalCost)}</span>
+              <span className="text-gray-600">Total Cost:</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(totalCost)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Break Even:</span>
-              <span className="font-medium text-slate-100">{formatCurrency(breakEven)}</span>
+              <span className="text-gray-600">Break Even:</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(breakEven)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Max Profit:</span>
-              <span className="font-medium text-green-400">
+              <span className="text-gray-600">Max Profit:</span>
+              <span className="font-semibold text-green-600">
                 {typeof maxProfit === 'number' ? formatCurrency(maxProfit) : maxProfit}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Max Loss:</span>
-              <span className="font-medium text-red-400">{formatCurrency(maxLoss)}</span>
+              <span className="text-gray-600">Max Loss:</span>
+              <span className="font-semibold text-red-600">{formatCurrency(maxLoss)}</span>
             </div>
           </div>
         </div>
@@ -249,22 +249,22 @@ export default function OptionsTradeModal({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors font-medium border border-slate-600/50"
+            className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-semibold border border-gray-300"
           >
             Cancel
           </button>
           <button
             onClick={handleExecute}
             disabled={isExecuting || contracts <= 0 || premium <= 0}
-            className={`flex-1 px-4 py-3 rounded-lg transition-colors font-medium border disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex-1 px-4 py-3 rounded-lg transition-colors font-semibold border disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md ${
               action === 'buy'
-                ? 'bg-green-600/20 hover:bg-green-600/30 text-green-400 border-green-500/30'
-                : 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border-red-500/30'
+                ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+                : 'bg-red-600 hover:bg-red-700 text-white border-red-600'
             }`}
           >
             {isExecuting ? (
               <div className="flex items-center gap-2 justify-center">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Executing...
               </div>
             ) : (

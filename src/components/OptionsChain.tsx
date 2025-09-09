@@ -131,7 +131,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
   ]);
 
   return (
-    <div className={`flex flex-col h-full bg-slate-950 text-slate-100 ${className}`}>
+    <div className={`flex flex-col h-full bg-white text-gray-900 ${className}`}>
       {/* Header */}
       <OptionsChainHeader
         optionType={state.optionType}
@@ -147,20 +147,20 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       {(state.tradeSuccess || state.tradeError) && (
         <div className="mx-8 mt-4">
           {state.tradeSuccess && (
-            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-              <p className="text-green-400">{state.tradeSuccess}</p>
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 font-medium">{state.tradeSuccess}</p>
             </div>
           )}
           {state.tradeError && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-              <p className="text-red-400">{state.tradeError}</p>
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 font-medium">{state.tradeError}</p>
             </div>
           )}
         </div>
       )}
 
       {/* Controls Section */}
-      <div className="px-8 py-5 border-b border-slate-800/40 bg-gradient-to-b from-slate-950/60 to-slate-950">
+      <div className="px-8 py-6 border-b border-gray-200 bg-white shadow-sm">
         {state.viewMode === 'screener' ? (
           <ScreenerControls
             customSymbols={state.customSymbols}
@@ -207,7 +207,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       {state.error && <ErrorDisplay error={state.error} />}
 
       {/* Results */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 bg-gray-50">
         {state.viewMode === 'screener' && state.screenerResults && (
           <ScreenerResults
             screenerResults={state.screenerResults}

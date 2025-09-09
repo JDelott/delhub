@@ -8,11 +8,14 @@ interface LoadingStateProps {
 
 export default function LoadingState({ viewMode }: LoadingStateProps) {
   return (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex items-center justify-center py-16">
       <div className="text-center">
-        <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-slate-400">
+        <div className="w-10 h-10 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600 font-medium">
           {viewMode === 'screener' ? 'Screening stocks for options...' : 'Loading options data...'}
+        </p>
+        <p className="text-gray-500 text-sm mt-2">
+          This may take a few moments
         </p>
       </div>
     </div>

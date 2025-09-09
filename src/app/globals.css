@@ -1,36 +1,52 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark theme - 60% of design */
-  --background: #09090b;
-  --foreground: #ffffff;
+  /* Light theme - Professional & Clean */
+  --background: #ffffff;
+  --foreground: #1f2937;
   
-  /* High contrast zinc scale */
-  --zinc-50: #fafafa;
-  --zinc-100: #f4f4f5;
-  --zinc-200: #e4e4e7;
-  --zinc-300: #d4d4d8;
-  --zinc-400: #a1a1aa;
-  --zinc-500: #71717a;
-  --zinc-600: #52525b;
-  --zinc-700: #3f3f46;
-  --zinc-800: #27272a;
-  --zinc-900: #18181b;
-  --zinc-950: #09090b;
+  /* Professional gray scale */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
   
-  /* Purple - 20% of design */
-  --purple-400: #a855f7;
-  --purple-500: #8b5cf6;
-  --purple-600: #7c3aed;
+  /* Professional blue - Primary brand color */
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
   
-  /* Coral - 10% of design (subtle accent) */
-  --coral-400: #ff7b7b;
-  --coral-500: #ff6666;
+  /* Success green */
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
   
-  /* Text colors for better accessibility */
-  --text-primary: #ffffff;
-  --text-secondary: #e4e4e7;
-  --text-muted: #d4d4d8;
+  /* Warning orange */
+  --orange-50: #fff7ed;
+  --orange-100: #ffedd5;
+  --orange-500: #f97316;
+  --orange-600: #ea580c;
+  
+  /* Error red */
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  
+  /* Text colors for professional look */
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
 }
 
 @theme inline {
@@ -50,10 +66,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clean Typography */
+/* Professional Typography */
 .text-display {
   font-size: 3.5rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -61,7 +77,7 @@ body {
 
 .text-heading {
   font-size: 2.25rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -83,70 +99,70 @@ body {
 
 .text-caption {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
-/* Button Base Styles */
+/* Professional Button Base Styles */
 .btn-base {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 4rem;
+  padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.025em;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border: none;
   outline: none;
+  border-radius: 0.5rem;
 }
 
-/* Primary Button - White with purple hover */
+/* Primary Button - Blue professional */
 .btn-primary {
-  background: white;
-  color: black;
-  border: 2px solid white;
+  background: var(--blue-600);
+  color: white;
+  border: 1px solid var(--blue-600);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .btn-primary:hover {
-  background: var(--purple-500);
-  color: white;
-  border-color: var(--purple-500);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.25);
+  background: var(--blue-700);
+  border-color: var(--blue-700);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Secondary Button - Outlined */
+/* Secondary Button - Clean outlined */
 .btn-secondary {
-  background: transparent;
-  color: white;
-  border: 2px solid var(--zinc-600);
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .btn-secondary:hover {
-  border-color: var(--purple-400);
-  color: var(--purple-400);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15);
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+  color: var(--gray-800);
 }
 
-/* Cards */
+/* Professional Cards */
 .card {
-  background: var(--zinc-900);
-  border: 1px solid var(--zinc-800);
-  transition: all 0.3s ease;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  border-color: var(--zinc-700);
-  transform: translateY(-2px);
+  border-color: var(--gray-300);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Make AI chat panel match chart container height */
