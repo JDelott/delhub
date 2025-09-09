@@ -150,20 +150,20 @@ export default function OptionsTradeModal({
             <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setAction('buy')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-md text-sm font-semibold transition-all duration-200 ${
                   action === 'buy'
-                    ? 'bg-green-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'bg-white text-green-700 shadow-sm border border-green-200'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
                 Buy to Open
               </button>
               <button
                 onClick={() => setAction('sell')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-md text-sm font-semibold transition-all duration-200 ${
                   action === 'sell'
-                    ? 'bg-red-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'bg-white text-red-700 shadow-sm border border-red-200'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
                 Sell to Open
@@ -179,7 +179,7 @@ export default function OptionsTradeModal({
               min="1"
               value={contracts}
               onChange={(e) => setContracts(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+              className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
             />
           </div>
 
@@ -193,7 +193,7 @@ export default function OptionsTradeModal({
                 setOrderType(newOrderType);
                 setPremium(newOrderType === 'MARKET' ? (option.bid + option.ask) / 2 : option.bid);
               }}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+              className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
             >
               <option value="LIMIT">Limit Order</option>
               <option value="MARKET">Market Order</option>
@@ -212,7 +212,7 @@ export default function OptionsTradeModal({
               value={premium}
               onChange={(e) => setPremium(parseFloat(e.target.value) || 0)}
               disabled={orderType === 'MARKET'}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:opacity-50 disabled:bg-gray-100"
+              className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm disabled:opacity-50 disabled:bg-gray-100"
             />
             {orderType === 'MARKET' && (
               <p className="text-xs text-gray-600 mt-1">Market orders use mid-price</p>

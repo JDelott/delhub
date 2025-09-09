@@ -160,14 +160,14 @@ export default function BatchTradeModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">
+            <h2 className="text-xl font-semibold text-gray-900">
               Batch Options Trading - Advanced Strategy
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-gray-600">
               {tieredPricing.enabled 
                 ? "Tiered Pricing Strategy: Multiple profit targets with risk management" 
                 : items.every(item => item.action === 'sell') 
@@ -179,7 +179,7 @@ export default function BatchTradeModal({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -188,24 +188,24 @@ export default function BatchTradeModal({
         </div>
 
         {/* Tiered Pricing Strategy Configuration */}
-        <div className="mb-6 p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
+        <div className="mb-6 p-4 bg-gray-50/30 rounded-lg border border-gray-200/50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-medium text-slate-200">Tiered Pricing Strategy</h3>
+              <h3 className="text-lg font-medium text-gray-900">Tiered Pricing Strategy</h3>
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={tieredPricing.enabled}
                   onChange={(e) => setTieredPricing(prev => ({ ...prev, enabled: e.target.checked }))}
-                  className="w-4 h-4 text-violet-600 bg-slate-700 border-slate-600 rounded focus:ring-violet-500 focus:ring-2"
+                  className="w-4 h-4 text-violet-600 bg-white border-gray-300 rounded focus:ring-violet-500 focus:ring-2"
                 />
-                <span className="text-sm text-slate-300">Enable Tiered Pricing</span>
+                <span className="text-sm text-gray-700">Enable Tiered Pricing</span>
               </label>
             </div>
             {tieredPricing.enabled && (
               <button
                 onClick={applyTieredPricingStrategy}
-                className="px-3 py-1.5 bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 border border-violet-500/30 rounded-md text-xs font-medium transition-all duration-200"
+                className="px-3 py-1.5 bg-violet-600/20 hover:bg-violet-600/30 text-violet-600 border border-violet-500/30 rounded-md text-xs font-medium transition-all duration-200"
                 disabled={isExecuting}
               >
                 Apply to All Positions
@@ -217,10 +217,10 @@ export default function BatchTradeModal({
             <div className="grid grid-cols-3 gap-4">
               {/* First Target */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-orange-400">First Target (50%)</h4>
+                <h4 className="text-sm font-medium text-orange-600">First Target (50%)</h4>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-xs text-slate-400">Profit per Share</label>
+                    <label className="text-xs text-gray-600">Profit per Share</label>
                     <input
                       type="number"
                       step="0.01"
@@ -233,11 +233,11 @@ export default function BatchTradeModal({
                           profitPerShare: parseFloat(e.target.value) || 0.05
                         }
                       }))}
-                      className="w-full px-2 py-1 bg-slate-700/50 border border-slate-600 rounded text-slate-100 text-xs"
+                      className="w-full h-9 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
                       disabled={isExecuting}
                     />
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-gray-500">
                     Target: +{formatCurrency(tieredPricing.firstTarget.profitPerShare)} per share
                   </div>
                 </div>
@@ -245,10 +245,10 @@ export default function BatchTradeModal({
 
               {/* Second Target */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-green-400">Second Target (30%)</h4>
+                <h4 className="text-sm font-medium text-green-600">Second Target (30%)</h4>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-xs text-slate-400">Profit per Share</label>
+                    <label className="text-xs text-gray-600">Profit per Share</label>
                     <input
                       type="number"
                       step="0.01"
@@ -261,11 +261,11 @@ export default function BatchTradeModal({
                           profitPerShare: parseFloat(e.target.value) || 0.02
                         }
                       }))}
-                      className="w-full px-2 py-1 bg-slate-700/50 border border-slate-600 rounded text-slate-100 text-xs"
+                      className="w-full h-9 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
                       disabled={isExecuting}
                     />
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-gray-500">
                     Target: +{formatCurrency(tieredPricing.secondTarget.profitPerShare)} per share
                   </div>
                 </div>
@@ -273,12 +273,12 @@ export default function BatchTradeModal({
 
               {/* Breakeven Target */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-blue-400">Breakeven Exit (20%)</h4>
+                <h4 className="text-sm font-medium text-blue-600">Breakeven Exit (20%)</h4>
                 <div className="space-y-2">
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-gray-500">
                     Exit remaining position at breakeven to cut losses
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-gray-500">
                     Target: $0.00 profit (breakeven)
                   </div>
                 </div>
@@ -288,14 +288,14 @@ export default function BatchTradeModal({
 
           {/* Tiered Pricing Summary */}
           {tieredPricing.enabled && (
-            <div className="mt-4 pt-4 border-t border-slate-700/50">
+            <div className="mt-4 pt-4 border-t border-gray-200/50">
               <div className="flex justify-between items-center">
-                <span className="text-slate-300 font-medium">Total Tiered Profit Potential:</span>
-                <span className="text-lg font-bold text-violet-400">
+                <span className="text-gray-700 font-medium">Total Tiered Profit Potential:</span>
+                <span className="text-lg font-bold text-violet-600">
                   {formatCurrency(totalTieredProfitPotential)}
                 </span>
               </div>
-              <div className="text-xs text-slate-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 Based on {items.length} positions with tiered exit strategy
               </div>
             </div>
@@ -304,22 +304,22 @@ export default function BatchTradeModal({
 
         {/* Strategy Quick Actions */}
         {items.length > 0 && !tieredPricing.enabled && (
-          <div className="mb-4 p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
+          <div className="mb-4 p-3 bg-gray-50/30 rounded-lg border border-gray-200/50">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-slate-300">
+              <div className="text-sm text-gray-700">
                 <strong>Quick Strategy Setup:</strong>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => items.forEach(item => applyScalpStrategy(item))}
-                  className="px-3 py-1.5 bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 border border-orange-500/30 rounded-md text-xs font-medium transition-all duration-200"
+                  className="px-3 py-1.5 bg-orange-600/20 hover:bg-orange-600/30 text-orange-600 border border-orange-500/30 rounded-md text-xs font-medium transition-all duration-200"
                   disabled={isExecuting}
                 >
                   Setup All Sells (5¢ below ask)
                 </button>
                 <button
                   onClick={() => items.forEach(item => applyBuyBackStrategy(item))}
-                  className="px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 rounded-md text-xs font-medium transition-all duration-200"
+                  className="px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 text-green-600 border border-green-500/30 rounded-md text-xs font-medium transition-all duration-200"
                   disabled={isExecuting}
                 >
                   Setup All Buy-Backs (5¢ lower)
@@ -331,32 +331,32 @@ export default function BatchTradeModal({
 
         {/* Batch Results Display */}
         {results && (
-          <div className="mb-6 p-4 bg-slate-800/50 rounded-lg">
-            <h3 className="text-lg font-medium text-slate-200 mb-3">Batch Execution Results</h3>
+          <div className="mb-6 p-4 bg-gray-50/50 rounded-lg">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Batch Execution Results</h3>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">
+                <div className="text-2xl font-bold text-green-600">
                   {results.successful}
                 </div>
-                <div className="text-sm text-slate-400">Successful</div>
+                <div className="text-sm text-gray-600">Successful</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">
+                <div className="text-2xl font-bold text-red-600">
                   {results.failed}
                 </div>
-                <div className="text-sm text-slate-400">Failed</div>
+                <div className="text-sm text-gray-600">Failed</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">
+                <div className="text-2xl font-bold text-blue-600">
                   {results.successful + results.failed}
                 </div>
-                <div className="text-sm text-slate-400">Total</div>
+                <div className="text-sm text-gray-600">Total</div>
               </div>
             </div>
             
             {results.errors.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-medium text-red-400 mb-2">Errors:</h4>
+                <h4 className="text-sm font-medium text-red-600 mb-2">Errors:</h4>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {results.errors.map((error, idx) => (
                     <div key={idx} className="text-xs text-red-300 bg-red-500/10 p-2 rounded">
@@ -375,7 +375,7 @@ export default function BatchTradeModal({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-slate-400 border-b border-slate-700/50">
+                  <tr className="text-gray-600 border-b border-gray-200/50">
                     <th className="text-left py-2">Symbol</th>
                     <th className="text-left py-2">Strike & Type</th>
                     <th className="text-left py-2">Bid-Ask Spread</th>
@@ -397,21 +397,21 @@ export default function BatchTradeModal({
                     const tieredTargets = calculateTieredPricingTargets(item);
                     
                     return (
-                      <tr key={item.id} className="border-b border-slate-800/30 last:border-b-0">
-                        <td className="py-2 text-slate-100 font-medium">
+                      <tr key={item.id} className="border-b border-gray-200 last:border-b-0">
+                        <td className="py-2 text-gray-900 font-medium">
                           {item.symbol}
                         </td>
-                        <td className="py-2 text-slate-300">
+                        <td className="py-2 text-gray-700">
                           <div>{formatCurrency(item.option.strike)} {item.optionType.toUpperCase()}</div>
-                          <div className="text-xs text-slate-500">{formatDate(item.option.expirationDate)}</div>
+                          <div className="text-xs text-gray-500">{formatDate(item.option.expirationDate)}</div>
                         </td>
-                        <td className="py-2 text-slate-300">
+                        <td className="py-2 text-gray-700">
                           <div className="text-xs">
-                            <span className="text-green-400">{formatCurrency(item.option.bid)}</span>
-                            <span className="text-slate-500"> - </span>
-                            <span className="text-red-400">{formatCurrency(item.option.ask)}</span>
+                            <span className="text-green-600">{formatCurrency(item.option.bid)}</span>
+                            <span className="text-gray-500"> - </span>
+                            <span className="text-red-600">{formatCurrency(item.option.ask)}</span>
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-gray-500">
                             Spread: {formatCurrency(item.option.bidAskSpread)}
                           </div>
                         </td>
@@ -419,7 +419,7 @@ export default function BatchTradeModal({
                           <select
                             value={item.action}
                             onChange={(e) => onUpdateItem(item.id, { action: e.target.value as 'buy' | 'sell' })}
-                            className="px-2 py-1 bg-slate-800/50 border border-slate-700 rounded text-slate-100 text-xs"
+                            className="h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
                             disabled={isExecuting}
                           >
                             <option value="sell">SELL</option>
@@ -432,7 +432,7 @@ export default function BatchTradeModal({
                             min="1"
                             value={item.contracts}
                             onChange={(e) => onUpdateItem(item.id, { contracts: Math.max(1, parseInt(e.target.value) || 1) })}
-                            className="w-16 px-2 py-1 bg-slate-800/50 border border-slate-700 rounded text-slate-100 text-xs"
+                            className="w-16 h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
                             disabled={isExecuting}
                           />
                         </td>
@@ -443,33 +443,33 @@ export default function BatchTradeModal({
                             min="0.01"
                             value={item.premium}
                             onChange={(e) => onUpdateItem(item.id, { premium: parseFloat(e.target.value) || 0.01 })}
-                            className="w-20 px-2 py-1 bg-slate-800/50 border border-slate-700 rounded text-slate-100 text-xs"
+                            className="w-20 h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
                             disabled={isExecuting}
                           />
                           {item.action === 'sell' && !tieredPricing.enabled && (
-                            <div className="text-xs text-slate-500 mt-1">
+                            <div className="text-xs text-gray-500 mt-1">
                               Optimal: {formatCurrency(optimalSellPrice)}
                             </div>
                           )}
                         </td>
                         <td className="py-2">
                           {tieredPricing.enabled && tieredTargets ? (
-                            <div className="text-violet-400 font-medium">
+                            <div className="text-violet-600 font-medium">
                               {formatCurrency(tieredTargets.totalProfit)}
                             </div>
                           ) : item.action === 'sell' && profitPotential > 0 ? (
-                            <div className="text-green-400 font-medium">
+                            <div className="text-green-600 font-medium">
                               {formatCurrency(profitPotential)}
                             </div>
                           ) : null}
                           {item.action === 'sell' && !tieredPricing.enabled && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-gray-500">
                               Buy back @ {formatCurrency(buyBackPrice)}
                             </div>
                           )}
                         </td>
-                        <td className="py-2 text-slate-300 font-medium">
-                          <div className={item.action === 'buy' ? 'text-red-400' : 'text-green-400'}>
+                        <td className="py-2 text-gray-700 font-medium">
+                          <div className={item.action === 'buy' ? 'text-red-600' : 'text-green-600'}>
                             {item.action === 'buy' ? '-' : '+'}{formatCurrency(item.contracts * item.premium * 100)}
                           </div>
                         </td>
@@ -477,13 +477,13 @@ export default function BatchTradeModal({
                           <td className="py-2">
                             {tieredTargets && (
                               <div className="text-xs space-y-1">
-                                <div className="text-orange-400">
+                                <div className="text-orange-600">
                                   T1: {formatCurrency(tieredTargets.firstTarget.price)} ({tieredTargets.firstTarget.contracts})
                                 </div>
-                                <div className="text-green-400">
+                                <div className="text-green-600">
                                   T2: {formatCurrency(tieredTargets.secondTarget.price)} ({tieredTargets.secondTarget.contracts})
                                 </div>
-                                <div className="text-blue-400">
+                                <div className="text-blue-600">
                                   BE: {formatCurrency(tieredTargets.breakeven.price)} ({tieredTargets.breakeven.contracts})
                                 </div>
                               </div>
@@ -496,7 +496,7 @@ export default function BatchTradeModal({
                               <>
                                 <button
                                   onClick={() => applyScalpStrategy(item)}
-                                  className="px-2 py-1 bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 rounded text-xs"
+                                  className="px-2 py-1 bg-orange-600/20 hover:bg-orange-600/30 text-orange-600 rounded text-xs"
                                   disabled={isExecuting}
                                   title="Set optimal sell price"
                                 >
@@ -504,7 +504,7 @@ export default function BatchTradeModal({
                                 </button>
                                 <button
                                   onClick={() => applyBuyBackStrategy(item)}
-                                  className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded text-xs"
+                                  className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 text-green-600 rounded text-xs"
                                   disabled={isExecuting}
                                   title="Set buy-back price"
                                 >
@@ -522,7 +522,7 @@ export default function BatchTradeModal({
                                     });
                                   }
                                 }}
-                                className="px-2 py-1 bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 rounded text-xs"
+                                className="px-2 py-1 bg-violet-600/20 hover:bg-violet-600/30 text-violet-600 rounded text-xs"
                                 disabled={isExecuting}
                                 title="Set tiered pricing targets"
                               >
@@ -534,7 +534,7 @@ export default function BatchTradeModal({
                         <td className="py-2 text-center">
                           <button
                             onClick={() => onRemoveItem(item.id)}
-                            className="text-red-400 hover:text-red-300 transition-colors"
+                            className="text-red-600 hover:text-red-300 transition-colors"
                             disabled={isExecuting}
                             title="Remove from batch"
                           >
@@ -551,31 +551,31 @@ export default function BatchTradeModal({
             </div>
 
             {/* Enhanced Batch Summary */}
-            <div className="bg-slate-800/30 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-slate-300 mb-3">
+            <div className="bg-gray-50/30 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">
                 {tieredPricing.enabled ? 'Tiered Pricing Strategy Summary' : 'Scalping Strategy Summary'}
               </h3>
               <div className="grid grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-cyan-400">
+                  <div className="text-lg font-bold text-cyan-600">
                     {items.length}
                   </div>
-                  <div className="text-xs text-slate-400">Total Positions</div>
+                  <div className="text-xs text-gray-600">Total Positions</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-orange-400">
+                  <div className="text-lg font-bold text-orange-600">
                     {items.filter(item => item.action === 'sell').length}
                   </div>
-                  <div className="text-xs text-slate-400">Sell Orders</div>
+                  <div className="text-xs text-gray-600">Sell Orders</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-green-400">
+                  <div className="text-lg font-bold text-green-600">
                     {items.filter(item => item.action === 'buy').length}
                   </div>
-                  <div className="text-xs text-slate-400">Buy-Back Orders</div>
+                  <div className="text-xs text-gray-600">Buy-Back Orders</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-violet-400">
+                  <div className="text-lg font-bold text-violet-600">
                     {formatCurrency(
                       tieredPricing.enabled 
                         ? totalTieredProfitPotential
@@ -583,17 +583,17 @@ export default function BatchTradeModal({
                             .reduce((sum, item) => sum + calculateProfitPotential(item), 0)
                     )}
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-gray-600">
                     {tieredPricing.enabled ? 'Tiered Profit Potential' : 'Total Profit Potential'}
                   </div>
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-slate-700/50">
+              <div className="mt-4 pt-4 border-t border-gray-200/50">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Premium Collected (Sells):</span>
-                    <span className="font-bold text-green-400">
+                    <span className="text-gray-600">Premium Collected (Sells):</span>
+                    <span className="font-bold text-green-600">
                       {formatCurrency(
                         items
                           .filter(item => item.action === 'sell')
@@ -602,8 +602,8 @@ export default function BatchTradeModal({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Buy-Back Cost:</span>
-                    <span className="font-bold text-red-400">
+                    <span className="text-gray-600">Buy-Back Cost:</span>
+                    <span className="font-bold text-red-600">
                       {formatCurrency(
                         items
                           .filter(item => item.action === 'buy')
@@ -613,9 +613,9 @@ export default function BatchTradeModal({
                   </div>
                 </div>
                 
-                <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-700/50">
-                  <span className="text-slate-300 font-medium">Net Position:</span>
-                  <span className="font-bold text-slate-100">
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200/50">
+                  <span className="text-gray-700 font-medium">Net Position:</span>
+                  <span className="font-bold text-gray-900">
                     {formatCurrency(
                       items.reduce((sum, item) => {
                         const cost = item.contracts * item.premium * 100;
@@ -631,7 +631,7 @@ export default function BatchTradeModal({
             <div className="flex gap-3 pt-4">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors font-medium border border-slate-600/50"
+                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium border border-gray-300/50"
                 disabled={isExecuting}
               >
                 Cancel
@@ -639,7 +639,7 @@ export default function BatchTradeModal({
               <button
                 onClick={onExecute}
                 disabled={isExecuting || items.length === 0}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-lg transition-colors font-medium border border-violet-500/50 disabled:border-slate-600/50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-lg transition-colors font-medium border border-violet-500/50 disabled:border-gray-300/50 disabled:cursor-not-allowed"
               >
                 {isExecuting ? (
                   <div className="flex items-center gap-2 justify-center">
@@ -664,18 +664,18 @@ export default function BatchTradeModal({
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="text-slate-400 mb-2">
+            <div className="text-gray-600 mb-2">
               <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-slate-300 mb-2">No Trades Selected</h3>
-            <p className="text-slate-500">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">No Trades Selected</h3>
+            <p className="text-gray-500">
               Select options from the screener results to set up your trading strategy.
             </p>
             <button
               onClick={onClose}
-              className="mt-4 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors font-medium"
+              className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
             >
               Close
             </button>

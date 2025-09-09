@@ -131,7 +131,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
   ]);
 
   return (
-    <div className={`flex flex-col h-full bg-white text-gray-900 ${className}`}>
+    <div className={`flex flex-col min-h-screen bg-white text-gray-900 ${className}`}>
       {/* Header */}
       <OptionsChainHeader
         optionType={state.optionType}
@@ -145,7 +145,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
 
       {/* Trade Success/Error Messages */}
       {(state.tradeSuccess || state.tradeError) && (
-        <div className="mx-8 mt-4">
+        <div className="mx-4 sm:mx-6 mt-4">
           {state.tradeSuccess && (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-700 font-medium">{state.tradeSuccess}</p>
@@ -160,7 +160,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       )}
 
       {/* Controls Section */}
-      <div className="px-8 py-6 border-b border-gray-200 bg-white shadow-sm">
+      <div className="px-4 sm:px-6 py-6 border-b border-gray-200 bg-white shadow-sm">
         {state.viewMode === 'screener' ? (
           <ScreenerControls
             customSymbols={state.customSymbols}
@@ -207,7 +207,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       {state.error && <ErrorDisplay error={state.error} />}
 
       {/* Results */}
-      <div className="flex-1 overflow-auto p-6 bg-gray-50">
+      <div className="p-4 sm:p-6 bg-gray-50">
         {state.viewMode === 'screener' && state.screenerResults && (
           <ScreenerResults
             screenerResults={state.screenerResults}
