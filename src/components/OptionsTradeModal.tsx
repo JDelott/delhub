@@ -4,7 +4,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { FilteredPutOption, FilteredCallOption } from '@/lib/tradier-service';
+import { FilteredPutOption, FilteredCallOption } from '../lib/tradier-service';
+import { calculateSmartPricing } from '../utils/smartPricing';
 
 interface OptionsTradeModalProps {
   isOpen: boolean;
@@ -39,12 +40,35 @@ export default function OptionsTradeModal({
   const [premium, setPremium] = useState(0);
   const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('LIMIT');
 
-  // Update premium when option changes - Fixed useEffect hook
+  // Initialize action and premium when option changes
   useEffect(() => {
     if (option) {
-      setPremium(orderType === 'MARKET' ? (option.bid + option.ask) / 2 : option.bid);
+      // Default to 'sell' for puts, 'buy' for calls
+      const defaultAction = optionType === 'put' ? 'sell' : 'buy';
+      setAction(defaultAction);
+      
+      // Calculate smart pricing
+      if (orderType === 'LIMIT') {
+        const smartPricing = calculateSmartPricing(option, defaultAction);
+        setPremium(smartPricing.price);
+      } else {
+        // Market order uses mid-price
+        setPremium((option.bid + option.ask) / 2);
+      }
     }
-  }, [option, orderType]);
+  }, [option, optionType, orderType]);
+
+  // Update premium when action or order type changes
+  useEffect(() => {
+    if (option && action) {
+      if (orderType === 'LIMIT') {
+        const smartPricing = calculateSmartPricing(option, action);
+        setPremium(smartPricing.price);
+      } else {
+        setPremium((option.bid + option.ask) / 2);
+      }
+    }
+  }, [action, orderType, option]);
 
   const handleExecute = useCallback(async () => {
     if (!option) return;
@@ -132,6 +156,15 @@ export default function OptionsTradeModal({
               <div className="text-red-600 font-semibold">{formatCurrency(option.ask)}</div>
             </div>
             <div>
+              <span className="text-gray-600">Spread:</span>
+              <div className="font-semibold text-gray-900">
+                {formatCurrency(option.bidAskSpread)} 
+                <span className="text-xs text-gray-500 ml-1">
+                  ({option.bidAskSpread >= 0.14 ? '15¢' : '10¢'} spread)
+                </span>
+              </div>
+            </div>
+            <div>
               <span className="text-gray-600">Volume:</span>
               <div className="font-semibold text-gray-900">{option.volume.toLocaleString()}</div>
             </div>
@@ -139,6 +172,14 @@ export default function OptionsTradeModal({
               <span className="text-gray-600">Open Interest:</span>
               <div className="font-semibold text-gray-900">{option.openInterest?.toLocaleString() || 'N/A'}</div>
             </div>
+            {orderType === 'LIMIT' && (
+              <div>
+                <span className="text-gray-600">Smart Pricing:</span>
+                <div className="font-semibold text-blue-600">
+                  Target {formatCurrency(calculateSmartPricing(option, action).expectedProfit)} profit
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -191,7 +232,7 @@ export default function OptionsTradeModal({
               onChange={(e) => {
                 const newOrderType = e.target.value as 'MARKET' | 'LIMIT';
                 setOrderType(newOrderType);
-                setPremium(newOrderType === 'MARKET' ? (option.bid + option.ask) / 2 : option.bid);
+                // Premium will be updated by the useEffect hook
               }}
               className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
             >
@@ -216,6 +257,14 @@ export default function OptionsTradeModal({
             />
             {orderType === 'MARKET' && (
               <p className="text-xs text-gray-600 mt-1">Market orders use mid-price</p>
+            )}
+            {orderType === 'LIMIT' && option && (
+              <p className="text-xs text-gray-600 mt-1">
+                Smart pricing: {action === 'sell' ? 
+                  `${option.bidAskSpread >= 0.14 ? '5¢' : '3¢'} below ask` : 
+                  `${option.bidAskSpread >= 0.14 ? '5¢' : '3¢'} above bid`
+                } for {option.bidAskSpread >= 0.14 ? '15¢' : '10¢'} spread
+              </p>
             )}
           </div>
         </div>
