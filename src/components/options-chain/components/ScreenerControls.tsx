@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { SECTOR_FILTERS, VOLUME_FILTERS, STRIKE_RANGES, SPREAD_OPTIONS } from '../constants';
 
 interface ScreenerControlsProps {
@@ -56,6 +57,43 @@ export default function ScreenerControls({
     );
   };
 
+  // Close all dropdowns
+  const closeAllDropdowns = () => {
+    document.getElementById('expiration-dropdown')?.classList.add('hidden');
+    document.getElementById('price-dropdown')?.classList.add('hidden');
+    document.getElementById('sector-dropdown')?.classList.add('hidden');
+    document.getElementById('volume-dropdown')?.classList.add('hidden');
+    document.getElementById('strike-dropdown')?.classList.add('hidden');
+    document.getElementById('spreads-dropdown')?.classList.add('hidden');
+  };
+
+  // Toggle specific dropdown and close others
+  const toggleDropdown = (dropdownId: string) => {
+    const dropdown = document.getElementById(dropdownId);
+    const isHidden = dropdown?.classList.contains('hidden');
+    
+    // Close all dropdowns first
+    closeAllDropdowns();
+    
+    // If the clicked dropdown was hidden, show it
+    if (isHidden) {
+      dropdown?.classList.remove('hidden');
+    }
+  };
+
+  // Add click outside listener
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.dropdown-container')) {
+        closeAllDropdowns();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* First Row - 5 columns */}
@@ -67,22 +105,17 @@ export default function ScreenerControls({
             Time Horizon
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('expiration-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('expiration-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {expirationFilter === 'all' ? 'All Timeframes' :
-                   expirationFilter === 'near' ? 'Short Term' : 'Long Term'}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {expirationFilter === 'all' ? 'All Timeframes' :
+                 expirationFilter === 'near' ? 'Short Term' : 'Long Term'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
@@ -101,7 +134,8 @@ export default function ScreenerControls({
                       ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-blue-300'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setExpirationFilter(option.value as 'all' | 'near' | 'far');
                     document.getElementById('expiration-dropdown')?.classList.add('hidden');
                   }}
@@ -121,23 +155,18 @@ export default function ScreenerControls({
             Price Range
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('price-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('price-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {priceFilter === 'verified50' ? 'Under $50' :
-                   priceFilter === 'under25' ? 'Under $25' :
-                   priceFilter === 'under50' ? 'Under $50' : 'All Prices'}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {priceFilter === 'verified50' ? 'Under $50' :
+                 priceFilter === 'under25' ? 'Under $25' :
+                 priceFilter === 'under50' ? 'Under $50' : 'All Prices'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
@@ -157,7 +186,8 @@ export default function ScreenerControls({
                       ? 'bg-violet-50 text-violet-900 border-l-4 border-violet-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-violet-300'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setPriceFilter(option.value as 'all' | 'under50' | 'under25' | 'verified50');
                     document.getElementById('price-dropdown')?.classList.add('hidden');
                   }}
@@ -181,21 +211,16 @@ export default function ScreenerControls({
             Industry Sector
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('sector-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('sector-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {SECTOR_FILTERS.find(s => s.value === sectorFilter)?.label || 'All Sectors'}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {SECTOR_FILTERS.find(s => s.value === sectorFilter)?.label || 'All Sectors'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
@@ -210,7 +235,8 @@ export default function ScreenerControls({
                       ? 'bg-emerald-50 text-emerald-900 border-l-4 border-emerald-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-emerald-300'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setSectorFilter(sector.value);
                     document.getElementById('sector-dropdown')?.classList.add('hidden');
                   }}
@@ -300,21 +326,16 @@ export default function ScreenerControls({
             Volume Filter
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('volume-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('volume-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {VOLUME_FILTERS.find(v => v.value === minAverageVolume)?.displayValue || 'Custom'}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {VOLUME_FILTERS.find(v => v.value === minAverageVolume)?.displayValue || 'Custom'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
@@ -329,7 +350,8 @@ export default function ScreenerControls({
                       ? 'bg-orange-50 text-orange-900 border-l-4 border-orange-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-orange-300'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setMinAverageVolume(volumeOption.value);
                     document.getElementById('volume-dropdown')?.classList.add('hidden');
                   }}
@@ -388,21 +410,16 @@ export default function ScreenerControls({
             Strike Distance
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('strike-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('strike-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {STRIKE_RANGES.find(r => r.value === strikeRange)?.label || 'Select Range'}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {STRIKE_RANGES.find(r => r.value === strikeRange)?.label || 'Select Range'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
@@ -417,7 +434,8 @@ export default function ScreenerControls({
                       ? 'bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-yellow-300'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setStrikeRange(range.value);
                     document.getElementById('strike-dropdown')?.classList.add('hidden');
                   }}
@@ -441,23 +459,18 @@ export default function ScreenerControls({
             Exact Spreads ({selectedSpreads.length})
           </label>
           <div 
-            className="relative group cursor-pointer"
-            onClick={() => {
-              const dropdown = document.getElementById('spreads-dropdown');
-              dropdown?.classList.toggle('hidden');
-            }}
+            className="relative group cursor-pointer dropdown-container"
+            onClick={() => toggleDropdown('spreads-dropdown')}
           >
-            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-gray-900">
-                  {selectedSpreads.length === 0 ? 'Select spreads' : 
-                   selectedSpreads.length === 1 ? `$${selectedSpreads[0].toFixed(2)}` :
-                   `${selectedSpreads.length} spreads`}
-                </span>
-                <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
+              <span className="text-sm text-gray-900 font-medium">
+                {selectedSpreads.length === 0 ? 'Select spreads' : 
+                 selectedSpreads.length === 1 ? `$${selectedSpreads[0].toFixed(2)}` :
+                 `${selectedSpreads.length} spreads`}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             
             <div 
