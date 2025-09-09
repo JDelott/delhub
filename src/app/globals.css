@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+:root {
+  /* Dark theme - 60% of design */
+  --background: #09090b;
+  --foreground: #ffffff;
+  
+  /* High contrast zinc scale */
+  --zinc-50: #fafafa;
+  --zinc-100: #f4f4f5;
+  --zinc-200: #e4e4e7;
+  --zinc-300: #d4d4d8;
+  --zinc-400: #a1a1aa;
+  --zinc-500: #71717a;
+  --zinc-600: #52525b;
+  --zinc-700: #3f3f46;
+  --zinc-800: #27272a;
+  --zinc-900: #18181b;
+  --zinc-950: #09090b;
+  
+  /* Purple - 20% of design */
+  --purple-400: #a855f7;
+  --purple-500: #8b5cf6;
+  --purple-600: #7c3aed;
+  
+  /* Coral - 10% of design (subtle accent) */
+  --coral-400: #ff7b7b;
+  --coral-500: #ff6666;
+  
+  /* Text colors for better accessibility */
+  --text-primary: #ffffff;
+  --text-secondary: #e4e4e7;
+  --text-muted: #d4d4d8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Courier New", monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Clean Typography */
+.text-display {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.text-heading {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.text-subheading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.text-body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Button Base Styles */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 4rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+/* Primary Button - White with purple hover */
+.btn-primary {
+  background: white;
+  color: black;
+  border: 2px solid white;
+}
+
+.btn-primary:hover {
+  background: var(--purple-500);
+  color: white;
+  border-color: var(--purple-500);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.25);
+}
+
+/* Secondary Button - Outlined */
+.btn-secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid var(--zinc-600);
+}
+
+.btn-secondary:hover {
+  border-color: var(--purple-400);
+  color: var(--purple-400);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15);
+}
+
+/* Cards */
+.card {
+  background: var(--zinc-900);
+  border: 1px solid var(--zinc-800);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--zinc-700);
+  transform: translateY(-2px);
+}
+
+/* Make AI chat panel match chart container height */
+.chart-height-match {
+  height: auto;
+}
+
+/* Use CSS Grid to make equal height columns */
+.grid-equal-height {
+  display: grid;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .chart-height-match {
+    height: 100%;
+  }
+}
