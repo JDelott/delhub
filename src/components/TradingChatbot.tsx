@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MicrophoneIcon, PaperAirplaneIcon, XMarkIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { MicrophoneIcon, PaperAirplaneIcon, XMarkIcon, ChartBarIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { MicrophoneIcon as MicrophoneIconSolid } from '@heroicons/react/24/solid';
 import { useTradeStore } from '@/store/tradeStore';
 import Link from 'next/link';
@@ -311,36 +311,52 @@ export default function TradingChatbot() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col max-h-[600px]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-t-lg flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-white font-semibold text-base">
-            {trades.length} trades
-          </span>
-          <span className={`font-medium text-base ${tradeStats.totalAmount >= 0 ? 'text-green-200' : 'text-red-200'}`}>
-            {formatCurrency(tradeStats.totalAmount)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/trade-counter"
-            className="text-blue-100 hover:text-white transition-colors text-xs px-2 py-1 hover:bg-blue-800 rounded"
-            aria-label="Go to Trade Counter"
-          >
-            Counter
-          </Link>
-          <button
-            onClick={clearChat}
-            className="text-blue-100 hover:text-white transition-colors text-xs px-2 py-1 hover:bg-blue-800 rounded"
-            aria-label="Clear chat"
-          >
-            Clear
-          </button>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+        {/* Top row - Stats and Close */}
+        <div className="flex items-center justify-between p-3 pb-2">
+          <div className="flex items-center gap-4">
+            <span className="text-white font-semibold">
+              {trades.length} trades
+            </span>
+            <span className={`font-medium ${tradeStats.totalAmount >= 0 ? 'text-green-200' : 'text-red-200'}`}>
+              {formatCurrency(tradeStats.totalAmount)}
+            </span>
+          </div>
           <button
             onClick={toggleExpanded}
-            className="text-white hover:text-blue-200 transition-colors p-1"
+            className="text-white hover:text-blue-200 transition-colors p-1 hover:bg-blue-800/50 rounded"
             aria-label="Close trading assistant"
           >
             <XMarkIcon className="h-4 w-4" />
+          </button>
+        </div>
+        
+        {/* Bottom row - Navigation */}
+        <div className="flex items-center justify-between px-3 pb-3 pt-1 border-t border-blue-500/30">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/"
+              className="text-blue-100 hover:text-white transition-colors text-sm px-3 py-1.5 hover:bg-blue-800/50 rounded flex items-center gap-1.5 font-medium"
+              aria-label="Go to Options Screener"
+            >
+              <MagnifyingGlassIcon className="h-4 w-4" />
+              Screener
+            </Link>
+            <Link
+              href="/trade-counter"
+              className="text-blue-100 hover:text-white transition-colors text-sm px-3 py-1.5 hover:bg-blue-800/50 rounded flex items-center gap-1.5 font-medium"
+              aria-label="Go to Trade Counter"
+            >
+              <ChartBarIcon className="h-4 w-4" />
+              Counter
+            </Link>
+          </div>
+          <button
+            onClick={clearChat}
+            className="text-blue-200 hover:text-white transition-colors text-sm px-3 py-1.5 hover:bg-blue-800/50 rounded font-medium"
+            aria-label="Clear chat"
+          >
+            Clear Chat
           </button>
         </div>
       </div>

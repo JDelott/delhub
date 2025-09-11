@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTradeStore } from '@/store/tradeStore';
-import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function TradeDashboard() {
-  const { trades, getTradeStats, clearAllTrades, deleteTrade } = useTradeStore();
+  const { trades, getTradeStats, clearAllTrades, deleteTrade, addTrade } = useTradeStore();
   const stats = getTradeStats();
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showTopSymbols, setShowTopSymbols] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualSymbol, setManualSymbol] = useState('');
+  const [manualAmount, setManualAmount] = useState('');
+  const [manualNotes, setManualNotes] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Fix hydration mismatch by ensuring client-side rendering
@@ -40,6 +44,27 @@ export default function TradeDashboard() {
       setShowConfirmClear(true);
       setTimeout(() => setShowConfirmClear(false), 3000);
     }
+  };
+
+  const handleManualEntry = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!manualSymbol.trim() || !manualAmount.trim()) return;
+    
+    const amount = parseFloat(manualAmount);
+    if (isNaN(amount)) return;
+    
+    addTrade({
+      symbol: manualSymbol.trim().toUpperCase(),
+      amount: amount,
+      notes: manualNotes.trim() || undefined
+    });
+    
+    // Reset form
+    setManualSymbol('');
+    setManualAmount('');
+    setManualNotes('');
+    setShowManualEntry(false);
   };
 
   const handleDeleteTrade = (tradeId: string) => {
@@ -102,6 +127,77 @@ export default function TradeDashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Trade Counter</h1>
         <div className="flex items-center space-x-3">
+          {/* Manual Entry Dropdown Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowManualEntry(!showManualEntry)}
+              className="flex items-center px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Add Entry
+            </button>
+            
+            {showManualEntry && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                <form onSubmit={handleManualEntry} className="p-4 space-y-3">
+                  <h3 className="font-medium text-gray-900 mb-3">Add Manual Entry</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
+                    <input
+                      type="text"
+                      value={manualSymbol}
+                      onChange={(e) => setManualSymbol(e.target.value)}
+                      placeholder="e.g. AAPL"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={manualAmount}
+                      onChange={(e) => setManualAmount(e.target.value)}
+                      placeholder="e.g. 150.00 or -75.50"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+                    <input
+                      type="text"
+                      value={manualNotes}
+                      onChange={(e) => setManualNotes(e.target.value)}
+                      placeholder="e.g. Weekly calls"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowManualEntry(false)}
+                      className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                    >
+                      Add Entry
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+
           {/* Top Symbols Dropdown Button */}
           <div className="relative">
             <button
