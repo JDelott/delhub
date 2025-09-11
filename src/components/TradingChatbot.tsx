@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MicrophoneIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MicrophoneIcon, PaperAirplaneIcon, XMarkIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { MicrophoneIcon as MicrophoneIconSolid } from '@heroicons/react/24/solid';
 import { useTradeStore } from '@/store/tradeStore';
+import Link from 'next/link';
 
 interface Message {
   id: string;
@@ -310,30 +311,36 @@ export default function TradingChatbot() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col max-h-[600px]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-lg">Trade Counter</h3>
-          <div className="text-blue-100 text-sm flex items-center gap-4">
-            <span>{trades.length} entries</span>
-            <span className={tradeStats.totalAmount >= 0 ? 'text-green-200' : 'text-red-200'}>
-              {formatCurrency(tradeStats.totalAmount)} total
-            </span>
-          </div>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-t-lg flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-white font-semibold text-base">
+            {trades.length} trades
+          </span>
+          <span className={`font-medium text-base ${tradeStats.totalAmount >= 0 ? 'text-green-200' : 'text-red-200'}`}>
+            {formatCurrency(tradeStats.totalAmount)}
+          </span>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/trade-counter"
+            className="text-blue-100 hover:text-white transition-colors text-xs px-2 py-1 hover:bg-blue-800 rounded"
+            aria-label="Go to Trade Counter"
+          >
+            Counter
+          </Link>
           <button
             onClick={clearChat}
-            className="text-white hover:text-blue-200 transition-colors p-1 text-xs bg-blue-800 hover:bg-blue-900 rounded px-2 py-1"
+            className="text-blue-100 hover:text-white transition-colors text-xs px-2 py-1 hover:bg-blue-800 rounded"
             aria-label="Clear chat"
           >
-            Clear Chat
+            Clear
           </button>
           <button
             onClick={toggleExpanded}
             className="text-white hover:text-blue-200 transition-colors p-1"
             aria-label="Close trading assistant"
           >
-            <XMarkIcon className="h-5 w-5" />
+            <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
       </div>

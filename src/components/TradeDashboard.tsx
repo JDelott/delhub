@@ -252,7 +252,7 @@ export default function TradeDashboard() {
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {trades.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No entries yet. Use the chatbot to start logging: "SRPT $2"
+              No entries yet. Use the chatbot to start logging trades.
             </div>
           ) : (
             getRecentTrades().map((trade) => (
