@@ -120,10 +120,12 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
 
   // Extract dollar amount (positive or negative)
   let amount = 0;
-  const amountMatch = message.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
-  if (amountMatch) {
-    amount = parseFloat(amountMatch[1]);
-    console.log('✅ Found amount:', amount);
+  
+  // First try to match explicit dollar amounts like $5, $10.50
+  const explicitAmountMatch = message.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
+  if (explicitAmountMatch) {
+    amount = parseFloat(explicitAmountMatch[1]);
+    console.log('✅ Found explicit amount:', amount);
     
     // Check for negative indicators
     if (/\b(loss|lost|down|negative|minus)\b/i.test(message)) {
@@ -131,7 +133,34 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
       console.log('📉 Made amount negative:', amount);
     }
   } else {
-    console.log('❌ No amount found');
+    // Try to match written amounts like "a dollar", "5 dollars", "ten dollars"
+    const writtenAmountMatch = message.match(/\b(?:a\s+dollar|(\d+(?:\.\d{1,2})?)\s+dollars?|one\s+dollar|two\s+dollars?|three\s+dollars?|four\s+dollars?|five\s+dollars?|ten\s+dollars?)\b/i);
+    if (writtenAmountMatch) {
+      if (message.includes('a dollar') || message.includes('one dollar')) {
+        amount = 1;
+      } else if (message.includes('two dollar')) {
+        amount = 2;
+      } else if (message.includes('three dollar')) {
+        amount = 3;
+      } else if (message.includes('four dollar')) {
+        amount = 4;
+      } else if (message.includes('five dollar')) {
+        amount = 5;
+      } else if (message.includes('ten dollar')) {
+        amount = 10;
+      } else if (writtenAmountMatch[1]) {
+        amount = parseFloat(writtenAmountMatch[1]);
+      }
+      console.log('✅ Found written amount:', amount);
+      
+      // Check for negative indicators
+      if (/\b(loss|lost|down|negative|minus)\b/i.test(message)) {
+        amount = -amount;
+        console.log('📉 Made amount negative:', amount);
+      }
+    } else {
+      console.log('❌ No amount found');
+    }
   }
   
   // If no amount found, return null

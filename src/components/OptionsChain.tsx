@@ -22,6 +22,7 @@ import BatchTradeModal from './options-chain/components/BatchTradeModal';
 import LoadingState from './options-chain/components/LoadingState';
 import EmptyState from './options-chain/components/EmptyState';
 import ErrorDisplay from './options-chain/components/ErrorDisplay';
+import SideNavigation from './SideNavigation';
 
 export default function OptionsChain({ className = '' }: OptionsChainProps) {
   // Use custom hooks for state management
@@ -131,17 +132,22 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
   ]);
 
   return (
-    <div className={`flex flex-col min-h-screen bg-white text-gray-900 ${className}`}>
-      {/* Header */}
-      <OptionsChainHeader
-        optionType={state.optionType}
-        setOptionType={state.setOptionType}
-        selectedSpreadsCount={state.selectedSpreads.length}
-        selectedOptionsCount={state.selectedOptions.size}
-        viewMode={state.viewMode}
-        setViewMode={state.setViewMode}
-        onBatchTradeClick={batchTrading.openBatchTradeModal}
-      />
+    <div className={`flex min-h-screen bg-gray-50 ${className}`}>
+      {/* Side Navigation */}
+      <SideNavigation />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col bg-white text-gray-900">
+        {/* Header */}
+        <OptionsChainHeader
+          optionType={state.optionType}
+          setOptionType={state.setOptionType}
+          selectedSpreadsCount={state.selectedSpreads.length}
+          selectedOptionsCount={state.selectedOptions.size}
+          viewMode={state.viewMode}
+          setViewMode={state.setViewMode}
+          onBatchTradeClick={batchTrading.openBatchTradeModal}
+        />
 
       {/* Trade Success/Error Messages */}
       {(state.tradeSuccess || state.tradeError) && (
@@ -260,6 +266,7 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
         onRemoveItem={batchTrading.removeBatchItem}
         onExecute={batchTrading.executeBatchTrades}
       />
+      </div>
     </div>
   );
 }
