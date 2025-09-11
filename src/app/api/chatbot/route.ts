@@ -109,8 +109,57 @@ interface SimpleTradeEntry {
 function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
   console.log('🔍 Parsing message:', message);
   
+  // First, try to fix common voice transcription patterns
+  let cleanedMessage = message;
+  
+  // Pattern 1: "srpt4" -> "SRPT $4" (symbol followed immediately by number)
+  const voicePattern1 = cleanedMessage.match(/\b([A-Za-z]{2,5})(\d+(?:\.\d{1,2})?)\b/);
+  if (voicePattern1) {
+    const [, symbol, amount] = voicePattern1;
+    cleanedMessage = cleanedMessage.replace(voicePattern1[0], `${symbol} $${amount}`);
+    console.log('🎤 Fixed voice transcription (pattern 1):', cleanedMessage);
+  }
+  
+  // Pattern 2: "s r p t 4" -> "SRPT $4" (spaced out letters with number)
+  const voicePattern2 = cleanedMessage.match(/\b([a-z])\s+([a-z])\s+([a-z])\s+([a-z])\s+(\d+(?:\.\d{1,2})?)\b/i);
+  if (voicePattern2) {
+    const [, l1, l2, l3, l4, amount] = voicePattern2;
+    const symbol = `${l1}${l2}${l3}${l4}`.toUpperCase();
+    cleanedMessage = cleanedMessage.replace(voicePattern2[0], `${symbol} $${amount}`);
+    console.log('🎤 Fixed voice transcription (pattern 2):', cleanedMessage);
+  }
+  
+  // Pattern 3: "SYMBOL NUMBER" -> "SYMBOL $NUMBER" (simple format without dollars)
+  const simplePattern = cleanedMessage.match(/\b([A-Za-z]{2,5})\s+(\d+(?:\.\d{1,2})?)\b/);
+  if (simplePattern && !cleanedMessage.includes('$')) {
+    const [, symbol, amount] = simplePattern;
+    cleanedMessage = cleanedMessage.replace(simplePattern[0], `${symbol} $${amount}`);
+    console.log('🎤 Fixed simple format:', cleanedMessage);
+  }
+  
+  // Pattern 4: "apple 50" or "tesla 25" -> "AAPL $50", "TSLA $25" (company names)
+  const companyMappings: Record<string, string> = {
+    'apple': 'AAPL',
+    'tesla': 'TSLA', 
+    'microsoft': 'MSFT',
+    'google': 'GOOGL',
+    'amazon': 'AMZN',
+    'meta': 'META',
+    'nvidia': 'NVDA'
+  };
+  
+  for (const [company, symbol] of Object.entries(companyMappings)) {
+    const companyPattern = new RegExp(`\\b${company}\\s+(\\d+(?:\\.\\d{1,2})?)\\b`, 'i');
+    const match = cleanedMessage.match(companyPattern);
+    if (match) {
+      cleanedMessage = cleanedMessage.replace(match[0], `${symbol} $${match[1]}`);
+      console.log('🎤 Fixed company name transcription:', cleanedMessage);
+      break;
+    }
+  }
+  
   // Extract symbol (case insensitive, 2-5 characters)
-  const symbolMatch = message.match(/\b([A-Za-z]{2,5})\b/);
+  const symbolMatch = cleanedMessage.match(/\b([A-Za-z]{2,5})\b/);
   if (!symbolMatch) {
     console.log('❌ No symbol found');
     return null;
@@ -122,31 +171,31 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
   let amount = 0;
   
   // First try to match explicit dollar amounts like $5, $10.50
-  const explicitAmountMatch = message.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
+  const explicitAmountMatch = cleanedMessage.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
   if (explicitAmountMatch) {
     amount = parseFloat(explicitAmountMatch[1]);
     console.log('✅ Found explicit amount:', amount);
     
     // Check for negative indicators
-    if (/\b(loss|lost|down|negative|minus)\b/i.test(message)) {
+    if (/\b(loss|lost|down|negative|minus)\b/i.test(cleanedMessage)) {
       amount = -amount;
       console.log('📉 Made amount negative:', amount);
     }
   } else {
     // Try to match written amounts like "a dollar", "5 dollars", "ten dollars"
-    const writtenAmountMatch = message.match(/\b(?:a\s+dollar|(\d+(?:\.\d{1,2})?)\s+dollars?|one\s+dollar|two\s+dollars?|three\s+dollars?|four\s+dollars?|five\s+dollars?|ten\s+dollars?)\b/i);
+    const writtenAmountMatch = cleanedMessage.match(/\b(?:a\s+dollar|(\d+(?:\.\d{1,2})?)\s+dollars?|one\s+dollar|two\s+dollars?|three\s+dollars?|four\s+dollars?|five\s+dollars?|ten\s+dollars?)\b/i);
     if (writtenAmountMatch) {
-      if (message.includes('a dollar') || message.includes('one dollar')) {
+      if (cleanedMessage.includes('a dollar') || cleanedMessage.includes('one dollar')) {
         amount = 1;
-      } else if (message.includes('two dollar')) {
+      } else if (cleanedMessage.includes('two dollar')) {
         amount = 2;
-      } else if (message.includes('three dollar')) {
+      } else if (cleanedMessage.includes('three dollar')) {
         amount = 3;
-      } else if (message.includes('four dollar')) {
+      } else if (cleanedMessage.includes('four dollar')) {
         amount = 4;
-      } else if (message.includes('five dollar')) {
+      } else if (cleanedMessage.includes('five dollar')) {
         amount = 5;
-      } else if (message.includes('ten dollar')) {
+      } else if (cleanedMessage.includes('ten dollar')) {
         amount = 10;
       } else if (writtenAmountMatch[1]) {
         amount = parseFloat(writtenAmountMatch[1]);
@@ -154,7 +203,7 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
       console.log('✅ Found written amount:', amount);
       
       // Check for negative indicators
-      if (/\b(loss|lost|down|negative|minus)\b/i.test(message)) {
+      if (/\b(loss|lost|down|negative|minus)\b/i.test(cleanedMessage)) {
         amount = -amount;
         console.log('📉 Made amount negative:', amount);
       }
@@ -172,7 +221,7 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
   const tradeData = {
     symbol,
     amount,
-    notes: message.trim()
+    notes: message.trim() // Keep original message for notes
   };
   
   console.log('🎯 Parsed trade data:', tradeData);
