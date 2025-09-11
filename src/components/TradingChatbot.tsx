@@ -94,13 +94,14 @@ export default function TradingChatbot() {
               body: JSON.stringify({ 
                 message: content,
                 context: {
-                  trades: [],
-                  totalPL: 0,
-                  messageHistory: []
+                  trades: trades,
+                  totalPL: tradeStats.totalAmount,
+                  messageHistory: messages.slice(-10)
                 }
               })
             }).then(response => response.json())
             .then(result => {
+              console.log('🎤 Speech recognition API response:', result);
               if (result.success) {
                 const assistantMessage: Message = {
                   id: (Date.now() + 1).toString(),
@@ -111,7 +112,10 @@ export default function TradingChatbot() {
                 };
                 setMessages(prev => [...prev, assistantMessage]);
                 if (result.trade) {
+                  console.log('🎤🎯 Adding trade from speech:', result.trade);
                   addTrade(result.trade);
+                } else {
+                  console.log('🎤❌ No trade detected from speech');
                 }
               }
             }).catch(error => {
@@ -133,7 +137,7 @@ export default function TradingChatbot() {
         setIsListening(false);
       };
     }
-  }, [addTrade]);
+  }, [addTrade, trades, tradeStats.totalAmount, messages]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -193,13 +197,15 @@ export default function TradingChatbot() {
           message: content,
           context: {
             trades: trades,
-            totalPL: tradeStats.totalProfitLoss,
+            totalPL: tradeStats.totalAmount,
             messageHistory: messages.slice(-10) // Last 10 messages for context
           }
         })
       });
 
       const result = await response.json();
+      
+      console.log('🤖 Chatbot API response:', result);
       
       if (result.success) {
         const assistantMessage: Message = {
@@ -214,7 +220,10 @@ export default function TradingChatbot() {
 
         // If a trade was detected, add it to our trades list
         if (result.trade) {
+          console.log('🎯 Adding trade to store:', result.trade);
           addTrade(result.trade);
+        } else {
+          console.log('❌ No trade detected in response');
         }
       } else {
         throw new Error(result.error || 'Failed to get response');
@@ -232,7 +241,7 @@ export default function TradingChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [inputValue, isLoading, messages, trades, tradeStats.totalProfitLoss, addTrade]);
+  }, [inputValue, isLoading, messages, trades, tradeStats.totalAmount, addTrade]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -249,10 +258,7 @@ export default function TradingChatbot() {
   };
 
   const getTotalTradeValue = () => {
-    return trades.reduce((sum, trade) => {
-      const value = trade.contracts * trade.premium * 100; // Convert to actual dollar amount
-      return sum + (trade.action === 'buy' ? -value : value);
-    }, 0);
+    return trades.reduce((sum, trade) => sum + trade.amount, 0);
   };
 
   if (!isExpanded) {

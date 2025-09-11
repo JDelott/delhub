@@ -5,18 +5,6 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-interface TradeEntry {
-  id: string;
-  symbol: string;
-  action: 'buy' | 'sell';
-  optionType: 'call' | 'put';
-  contracts: number;
-  premium: number;
-  strike: number;
-  expiration: string;
-  timestamp: Date;
-  profitLoss?: number;
-}
 
 interface Message {
   id: string;
@@ -29,7 +17,7 @@ interface Message {
 interface ChatbotRequest {
   message: string;
   context: {
-    trades: TradeEntry[];
+    trades: SimpleTradeEntry[];
     totalPL: number;
     messageHistory: Message[];
   };
@@ -94,29 +82,12 @@ You're a simple counter, not a complex trading analyst. Keep it fast and simple!
 
     // Attempt to parse trade information from the user message
     const tradeData = parseTradeFromMessage(message);
-    
-    // If we detected a trade, also try to extract P/L information
-    let profitLoss: number | undefined;
-    
-    if (tradeData) {
-      const plMatch = message.match(/(?:profit|loss|p[&\/]?l|made|lost|gained)\s*:?\s*\$?([0-9,]+(?:\.[0-9]{2})?)/i);
-      if (plMatch) {
-        profitLoss = parseFloat(plMatch[1].replace(/,/g, ''));
-        // If it mentions "loss" or "lost", make it negative
-        if (/loss|lost/i.test(message)) {
-          profitLoss = -Math.abs(profitLoss);
-        }
-      }
-    }
 
     return NextResponse.json({
       success: true,
       response: assistantResponse,
       tradeDetected: !!tradeData,
-      trade: tradeData ? {
-        ...tradeData,
-        profitLoss
-      } : null
+      trade: tradeData
     });
 
   } catch (error) {
@@ -128,34 +99,55 @@ You're a simple counter, not a complex trading analyst. Keep it fast and simple!
   }
 }
 
-function parseTradeFromMessage(message: string): Omit<TradeEntry, 'id' | 'timestamp'> | null {
-  // Ultra-simple parsing: just symbol and dollar amount
+// Simple trade entry interface that matches the store
+interface SimpleTradeEntry {
+  symbol: string;
+  amount: number;
+  notes?: string;
+}
+
+function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
+  console.log('🔍 Parsing message:', message);
   
-  // Extract symbol (first all-caps word, 2-5 characters)
-  const symbolMatch = message.match(/\b([A-Z]{2,5})\b/);
-  if (!symbolMatch) return null;
-  const symbol = symbolMatch[1];
+  // Extract symbol (case insensitive, 2-5 characters)
+  const symbolMatch = message.match(/\b([A-Za-z]{2,5})\b/);
+  if (!symbolMatch) {
+    console.log('❌ No symbol found');
+    return null;
+  }
+  const symbol = symbolMatch[1].toUpperCase();
+  console.log('✅ Found symbol:', symbol);
 
   // Extract dollar amount (positive or negative)
   let amount = 0;
   const amountMatch = message.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/);
   if (amountMatch) {
     amount = parseFloat(amountMatch[1]);
+    console.log('✅ Found amount:', amount);
     
     // Check for negative indicators
     if (/\b(loss|lost|down|negative|minus)\b/i.test(message)) {
       amount = -amount;
+      console.log('📉 Made amount negative:', amount);
     }
+  } else {
+    console.log('❌ No amount found');
   }
   
   // If no amount found, return null
-  if (amount === 0) return null;
+  if (amount === 0) {
+    console.log('❌ Amount is zero, returning null');
+    return null;
+  }
 
-  return {
+  const tradeData = {
     symbol,
     amount,
     notes: message.trim()
   };
+  
+  console.log('🎯 Parsed trade data:', tradeData);
+  return tradeData;
 }
 
 function getNextFriday(): Date {
