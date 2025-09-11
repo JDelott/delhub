@@ -1,105 +1,79 @@
 
 
 
-import { useState } from 'react';
-import {
-  OptionsData,
-  ScreenerResults,
-  TradeModalState,
-  BatchTradeModalState,
-  OptionType,
-  ViewMode
-} from '../types';
+import { useOptionsStore } from '@/store/optionsStore';
 
 export const useOptionsChainState = () => {
-  // View and option type states
-  const [viewMode, setViewMode] = useState<ViewMode>('screener');
-  const [optionType, setOptionType] = useState<OptionType>('puts');
-  
-  // Single stock mode states
-  const [symbol, setSymbol] = useState('');
-  const [expirations, setExpirations] = useState<string[]>([]);
-  const [selectedExpiration, setSelectedExpiration] = useState('');
-  const [optionsData, setOptionsData] = useState<OptionsData | null>(null);
-  
-  // Screener mode states
-  const [screenerResults, setScreenerResults] = useState<ScreenerResults | null>(null);
-  const [customSymbols, setCustomSymbols] = useState('');
-  const [expirationFilter, setExpirationFilter] = useState<'all' | 'near' | 'far'>('all');
-  const [priceFilter, setPriceFilter] = useState<'all' | 'under50' | 'under25' | 'verified50'>('under50');
-  const [maxStockPrice, setMaxStockPrice] = useState<number>(50);
-  const [minAverageVolume, setMinAverageVolume] = useState<number>(1000000);
-  
-  // Common states
-  const [selectedSpreads, setSelectedSpreads] = useState<number[]>([0.15]); // Changed to array with default
-  const [minBid, setMinBid] = useState(0.05);
-  const [strikeRange, setStrikeRange] = useState<'tight' | 'moderate' | 'wide' | 'extended'>('moderate');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sectorFilter, setSectorFilter] = useState<string>('all');
-  
-  // Trading states
-  const [tradeModal, setTradeModal] = useState<TradeModalState>({
-    isOpen: false,
-    option: null,
-    optionType: 'put',
-    symbol: '',
-    stockPrice: 0
-  });
-  const [isExecutingTrade, setIsExecutingTrade] = useState(false);
-  const [tradeSuccess, setTradeSuccess] = useState<string | null>(null);
-  const [tradeError, setTradeError] = useState<string | null>(null);
-
-  // Batch trading states
-  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
-  const [batchModal, setBatchModal] = useState<BatchTradeModalState>({
-    isOpen: false,
-    items: []
-  });
-  const [isExecutingBatchTrade, setIsExecutingBatchTrade] = useState(false);
-  const [batchTradeResults, setBatchTradeResults] = useState<{
-    successful: number;
-    failed: number;
-    errors: string[];
-  } | null>(null);
+  // Get all state and actions from the persistent store
+  const store = useOptionsStore();
 
   return {
     // View states
-    viewMode, setViewMode,
-    optionType, setOptionType,
+    viewMode: store.viewMode,
+    setViewMode: store.setViewMode,
+    optionType: store.optionType,
+    setOptionType: store.setOptionType,
     
     // Single stock states
-    symbol, setSymbol,
-    expirations, setExpirations,
-    selectedExpiration, setSelectedExpiration,
-    optionsData, setOptionsData,
+    symbol: store.symbol,
+    setSymbol: store.setSymbol,
+    expirations: store.expirations,
+    setExpirations: store.setExpirations,
+    selectedExpiration: store.selectedExpiration,
+    setSelectedExpiration: store.setSelectedExpiration,
+    optionsData: store.optionsData,
+    setOptionsData: store.setOptionsData,
     
     // Screener states
-    screenerResults, setScreenerResults,
-    customSymbols, setCustomSymbols,
-    expirationFilter, setExpirationFilter,
-    priceFilter, setPriceFilter,
-    maxStockPrice, setMaxStockPrice,
-    minAverageVolume, setMinAverageVolume,
+    screenerResults: store.screenerResults,
+    setScreenerResults: store.setScreenerResults,
+    customSymbols: store.customSymbols,
+    setCustomSymbols: store.setCustomSymbols,
+    expirationFilter: store.expirationFilter,
+    setExpirationFilter: store.setExpirationFilter,
+    priceFilter: store.priceFilter,
+    setPriceFilter: store.setPriceFilter,
+    maxStockPrice: store.maxStockPrice,
+    setMaxStockPrice: store.setMaxStockPrice,
+    minAverageVolume: store.minAverageVolume,
+    setMinAverageVolume: store.setMinAverageVolume,
     
     // Common states
-    selectedSpreads, setSelectedSpreads, // Changed from exactSpread
-    minBid, setMinBid,
-    strikeRange, setStrikeRange,
-    loading, setLoading,
-    error, setError,
-    sectorFilter, setSectorFilter,
+    selectedSpreads: store.selectedSpreads,
+    setSelectedSpreads: store.setSelectedSpreads,
+    minBid: store.minBid,
+    setMinBid: store.setMinBid,
+    strikeRange: store.strikeRange,
+    setStrikeRange: store.setStrikeRange,
+    loading: store.loading,
+    setLoading: store.setLoading,
+    error: store.error,
+    setError: store.setError,
+    sectorFilter: store.sectorFilter,
+    setSectorFilter: store.setSectorFilter,
     
     // Trading states
-    tradeModal, setTradeModal,
-    isExecutingTrade, setIsExecutingTrade,
-    tradeSuccess, setTradeSuccess,
-    tradeError, setTradeError,
+    tradeModal: store.tradeModal,
+    setTradeModal: store.setTradeModal,
+    isExecutingTrade: store.isExecutingTrade,
+    setIsExecutingTrade: store.setIsExecutingTrade,
+    tradeSuccess: store.tradeSuccess,
+    setTradeSuccess: store.setTradeSuccess,
+    tradeError: store.tradeError,
+    setTradeError: store.setTradeError,
     
     // Batch trading states
-    selectedOptions, setSelectedOptions,
-    batchModal, setBatchModal,
-    isExecutingBatchTrade, setIsExecutingBatchTrade,
-    batchTradeResults, setBatchTradeResults
+    selectedOptions: store.selectedOptions,
+    setSelectedOptions: store.setSelectedOptions,
+    batchModal: store.batchModal,
+    setBatchModal: store.setBatchModal,
+    isExecutingBatchTrade: store.isExecutingBatchTrade,
+    setIsExecutingBatchTrade: store.setIsExecutingBatchTrade,
+    batchTradeResults: store.batchTradeResults,
+    setBatchTradeResults: store.setBatchTradeResults,
+    
+    // Utility actions
+    clearScreenerResults: store.clearScreenerResults,
+    resetFilters: store.resetFilters
   };
 };
