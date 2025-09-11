@@ -261,6 +261,18 @@ export default function TradingChatbot() {
     return trades.reduce((sum, trade) => sum + trade.amount, 0);
   };
 
+  const clearChat = () => {
+    setMessages([
+      {
+        id: '1',
+        content: "Hi! I'm your stock quantity counter. Just say the symbol and dollar amount like 'SRPT $2' or 'AAPL $50' and I'll track your running totals!",
+        sender: 'assistant',
+        timestamp: new Date(),
+        type: 'system'
+      }
+    ]);
+  };
+
   if (!isExpanded) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
@@ -308,13 +320,22 @@ export default function TradingChatbot() {
             </span>
           </div>
         </div>
-        <button
-          onClick={toggleExpanded}
-          className="text-white hover:text-blue-200 transition-colors p-1"
-          aria-label="Close trading assistant"
-        >
-          <XMarkIcon className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={clearChat}
+            className="text-white hover:text-blue-200 transition-colors p-1 text-xs bg-blue-800 hover:bg-blue-900 rounded px-2 py-1"
+            aria-label="Clear chat"
+          >
+            Clear Chat
+          </button>
+          <button
+            onClick={toggleExpanded}
+            className="text-white hover:text-blue-200 transition-colors p-1"
+            aria-label="Close trading assistant"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}

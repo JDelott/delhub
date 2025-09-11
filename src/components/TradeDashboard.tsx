@@ -50,19 +50,19 @@ export default function TradeDashboard() {
         </button>
       </div>
 
-      {/* Simple Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
-            <ChartBarIcon className="h-8 w-8 text-blue-500" />
-            <div className="ml-3">
+            <ChartBarIcon className="h-6 w-6 text-blue-500" />
+            <div className="ml-2">
               <p className="text-sm font-medium text-gray-500">Total Entries</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalTrades}</p>
+              <p className="text-lg font-bold text-gray-900">{stats.totalTrades}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
               stats.totalAmount >= 0 ? 'bg-green-100' : 'bg-red-100'
@@ -73,9 +73,9 @@ export default function TradeDashboard() {
                 <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
               )}
             </div>
-            <div className="ml-3">
+            <div className="ml-2">
               <p className="text-sm font-medium text-gray-500">Total Amount</p>
-              <p className={`text-2xl font-bold ${
+              <p className={`text-lg font-bold ${
                 stats.totalAmount >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
                 {formatCurrency(stats.totalAmount)}
@@ -84,26 +84,56 @@ export default function TradeDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
-            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-sm">Avg</span>
+            <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 font-bold text-xs">Avg</span>
             </div>
-            <div className="ml-3">
+            <div className="ml-2">
               <p className="text-sm font-medium text-gray-500">Average</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.averageAmount)}</p>
+              <p className="text-lg font-bold text-gray-900">{formatCurrency(stats.averageAmount)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
-            <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-              <span className="text-purple-600 font-bold text-sm">+/-</span>
+            <div className="h-6 w-6 bg-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-purple-600 font-bold text-xs">+/-</span>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Pos/Neg</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.positiveEntries}/{stats.negativeEntries}</p>
+            <div className="ml-2">
+              <p className="text-sm font-medium text-gray-500">Wins/Losses</p>
+              <p className="text-lg font-bold text-gray-900">{stats.positiveEntries}/{stats.negativeEntries}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Gains Card */}
+        <div className="bg-white rounded-lg shadow-md p-3">
+          <div className="flex items-center">
+            <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
+              <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+            </div>
+            <div className="ml-2">
+              <p className="text-sm font-medium text-gray-500">Total Gains</p>
+              <p className="text-lg font-bold text-green-600">
+                {formatCurrency(trades.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Losses Card */}
+        <div className="bg-white rounded-lg shadow-md p-3">
+          <div className="flex items-center">
+            <div className="h-6 w-6 bg-red-100 rounded-full flex items-center justify-center">
+              <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
+            </div>
+            <div className="ml-2">
+              <p className="text-sm font-medium text-gray-500">Total Losses</p>
+              <p className="text-lg font-bold text-red-600">
+                {formatCurrency(Math.abs(trades.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0)))}
+              </p>
             </div>
           </div>
         </div>
@@ -148,8 +178,15 @@ export default function TradeDashboard() {
             </div>
           ) : (
             getRecentTrades().map((trade) => (
-              <div key={trade.id} className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div key={trade.id} className={`flex justify-between items-center py-3 px-4 rounded-lg hover:opacity-90 transition-all ${
+                trade.amount >= 0 
+                  ? 'bg-green-50 border-l-4 border-green-400' 
+                  : 'bg-red-50 border-l-4 border-red-400'
+              }`}>
                 <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    trade.amount >= 0 ? 'bg-green-400' : 'bg-red-400'
+                  }`}></div>
                   <span className="font-bold text-lg text-gray-900">{trade.symbol}</span>
                   <span className="text-sm text-gray-500">
                     {new Date(trade.timestamp).toLocaleString([], { 
@@ -165,11 +202,18 @@ export default function TradeDashboard() {
                     </span>
                   )}
                 </div>
-                <span className={`font-bold text-lg ${
-                  trade.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {formatCurrency(trade.amount)}
-                </span>
+                <div className="flex items-center space-x-2">
+                  {trade.amount >= 0 ? (
+                    <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
+                  )}
+                  <span className={`font-bold text-lg ${
+                    trade.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {formatCurrency(trade.amount)}
+                  </span>
+                </div>
               </div>
             ))
           )}
