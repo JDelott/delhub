@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTradeStore } from '@/store/tradeStore';
 import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
@@ -10,6 +10,12 @@ export default function TradeDashboard() {
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showTopSymbols, setShowTopSymbols] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Fix hydration mismatch by ensuring client-side rendering
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -51,10 +57,50 @@ export default function TradeDashboard() {
     }
   };
 
+
+  // Show loading state during hydration
+  if (!isHydrated) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Trade Counter</h1>
+          <div className="flex items-center space-x-3">
+            <div className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+              Top Symbols (0)
+            </div>
+            <div className="px-4 py-2 bg-gray-200 rounded-lg text-sm font-medium text-gray-700">
+              Clear All Trades
+            </div>
+          </div>
+        </div>
+        
+        {/* Loading skeleton for stats */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-md p-3">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Loading skeleton for recent entries */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Entries</h3>
+          <div className="text-center py-8 text-gray-500">
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Stock Quantity Counter</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Trade Counter</h1>
         <div className="flex items-center space-x-3">
           {/* Top Symbols Dropdown Button */}
           <div className="relative">
@@ -228,11 +274,6 @@ export default function TradeDashboard() {
                       minute: '2-digit'
                     })}
                   </span>
-                  {trade.notes && (
-                    <span className="text-xs text-gray-400 max-w-xs truncate">
-                      "{trade.notes}"
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">

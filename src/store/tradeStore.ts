@@ -97,7 +97,7 @@ export const useTradeStore = create<TradeStore>()(
       },
     }),
     {
-      name: 'stock-quantity-counter', // localStorage key
+      name: 'trade-counter', // localStorage key
       // Only persist trades, not functions
       partialize: (state) => ({ trades: state.trades }),
     }

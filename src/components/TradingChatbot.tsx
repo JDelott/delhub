@@ -23,7 +23,7 @@ export default function TradingChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hi! I'm your stock quantity counter. Just say the symbol and dollar amount like 'SRPT $2' or 'AAPL $50' and I'll track your running totals!",
+      content: "Hi! I'm your trade counter. Just say the symbol and dollar amount like 'SRPT $2' or 'AAPL $50' and I'll track your running totals!",
       sender: 'assistant',
       timestamp: new Date(),
       type: 'system'
@@ -265,7 +265,7 @@ export default function TradingChatbot() {
     setMessages([
       {
         id: '1',
-        content: "Hi! I'm your stock quantity counter. Just say the symbol and dollar amount like 'SRPT $2' or 'AAPL $50' and I'll track your running totals!",
+        content: "Hi! I'm your trade counter. Just say the symbol and dollar amount like 'SRPT $2' or 'AAPL $50' and I'll track your running totals!",
         sender: 'assistant',
         timestamp: new Date(),
         type: 'system'
@@ -312,7 +312,7 @@ export default function TradingChatbot() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-lg">Stock Counter</h3>
+          <h3 className="font-semibold text-lg">Trade Counter</h3>
           <div className="text-blue-100 text-sm flex items-center gap-4">
             <span>{trades.length} entries</span>
             <span className={tradeStats.totalAmount >= 0 ? 'text-green-200' : 'text-red-200'}>

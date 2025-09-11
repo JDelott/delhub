@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     // Create system prompt for simple stock quantity counting
-    const systemPrompt = `You are a simple stock quantity counter assistant. Your job is to help traders log stock symbols with dollar amounts quickly.
+    const systemPrompt = `You are a simple trade counter assistant. Your job is to help traders log stock symbols with dollar amounts quickly.
 
 ## Current Context:
 - Total entries logged: ${context.trades.length}
@@ -60,13 +60,13 @@ You're a simple counter, not a complex trading analyst. Keep it fast and simple!
 
     // Prepare conversation history for Claude
     const conversationHistory = context.messageHistory.slice(-6).map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant' as const,
+      role: (msg.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
       content: msg.content
     }));
 
     // Add current message
     conversationHistory.push({
-      role: 'user',
+      role: 'user' as const,
       content: message
     });
 
@@ -112,6 +112,27 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
   // First, try to fix common voice transcription patterns
   let cleanedMessage = message;
   
+  // Fix common letter sound confusions
+  const letterSoundFixes: Record<string, string> = {
+    // "B" often gets transcribed as other sounds
+    'dax': 'BAX',  // "D A X" when trying to say "B A X"
+    'bax': 'BAX',  // Sometimes it gets it right
+    'vax': 'BAX',  // "V" sound confusion
+    'pax': 'BAX',  // "P" sound confusion
+    // Add other common confusions
+    'see': 'C',
+    'bee': 'B', 
+    'dee': 'D',
+    'pee': 'P',
+    'tee': 'T'
+  };
+  
+  // Apply letter sound fixes
+  for (const [wrong, correct] of Object.entries(letterSoundFixes)) {
+    const regex = new RegExp(`\\b${wrong}\\b`, 'gi');
+    cleanedMessage = cleanedMessage.replace(regex, correct);
+  }
+  
   // Pattern 1: "srpt4" -> "SRPT $4" (symbol followed immediately by number)
   const voicePattern1 = cleanedMessage.match(/\b([A-Za-z]{2,5})(\d+(?:\.\d{1,2})?)\b/);
   if (voicePattern1) {
@@ -120,13 +141,44 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
     console.log('🎤 Fixed voice transcription (pattern 1):', cleanedMessage);
   }
   
-  // Pattern 2: "s r p t 4" -> "SRPT $4" (spaced out letters with number)
-  const voicePattern2 = cleanedMessage.match(/\b([a-z])\s+([a-z])\s+([a-z])\s+([a-z])\s+(\d+(?:\.\d{1,2})?)\b/i);
-  if (voicePattern2) {
-    const [, l1, l2, l3, l4, amount] = voicePattern2;
-    const symbol = `${l1}${l2}${l3}${l4}`.toUpperCase();
-    cleanedMessage = cleanedMessage.replace(voicePattern2[0], `${symbol} $${amount}`);
-    console.log('🎤 Fixed voice transcription (pattern 2):', cleanedMessage);
+  // Pattern 2: Spaced out letters with number - handle 2-5 letter symbols
+  // "b a x 5" -> "BAX $5", "s r p t 4" -> "SRPT $4", "b a x $4" -> "BAX $4"
+  const spacedLetterPatterns = [
+    // 3 letters with optional $ and spaces: "b a x $4", "b a x 5", "b a x $ 4"
+    /\b([a-z])\s+([a-z])\s+([a-z])(?:\s+\$?\s*(\d+(?:\.\d{1,2})?))\b/i,
+    // 4 letters: "s r p t 4", "s r p t $4"
+    /\b([a-z])\s+([a-z])\s+([a-z])\s+([a-z])(?:\s+\$?\s*(\d+(?:\.\d{1,2})?))\b/i,
+    // 5 letters: "a a p l e 50", "a a p l e $50"
+    /\b([a-z])\s+([a-z])\s+([a-z])\s+([a-z])\s+([a-z])(?:\s+\$?\s*(\d+(?:\.\d{1,2})?))\b/i,
+    // 2 letters: "g e $5", "g e 5"  
+    /\b([a-z])\s+([a-z])(?:\s+\$?\s*(\d+(?:\.\d{1,2})?))\b/i
+  ];
+  
+  for (const pattern of spacedLetterPatterns) {
+    const match = cleanedMessage.match(pattern);
+    if (match) {
+      const amount = match[match.length - 1]; // Last item is amount
+      const letters = match.slice(1, -1).filter(Boolean); // All except the last (amount), remove nulls
+      const symbol = letters.join('').toUpperCase();
+      cleanedMessage = cleanedMessage.replace(match[0], `${symbol} $${amount}`);
+      console.log('🎤 Fixed spaced letters pattern:', cleanedMessage);
+      break;
+    }
+  }
+  
+  // Pattern 2b: Handle spaced letters WITHOUT amount (like "b a x" alone)
+  // Then look for amount elsewhere in message
+  const spacedLettersOnly = cleanedMessage.match(/\b([a-z])\s+([a-z])(?:\s+([a-z]))?(?:\s+([a-z]))?(?:\s+([a-z]))?\b/i);
+  if (spacedLettersOnly && !cleanedMessage.includes('$')) {
+    const letters = spacedLettersOnly.slice(1).filter(Boolean); // Remove nulls
+    const symbol = letters.join('').toUpperCase();
+    
+    // Look for amount separately in the message
+    const amountInMessage = cleanedMessage.match(/\$?(\d+(?:\.\d{1,2})?)/);
+    if (amountInMessage) {
+      cleanedMessage = `${symbol} $${amountInMessage[1]}`;
+      console.log('🎤 Fixed spaced letters + separate amount:', cleanedMessage);
+    }
   }
   
   // Pattern 3: "SYMBOL NUMBER" -> "SYMBOL $NUMBER" (simple format without dollars)
