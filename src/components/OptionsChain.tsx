@@ -189,6 +189,10 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
             setStrikeRange={state.setStrikeRange}
             loading={state.loading}
             onRunScreener={handleRunScreener}
+            onClearFilters={() => {
+              state.resetFilters();
+              state.clearScreenerResults();
+            }}
           />
         ) : (
           <SingleStockControls

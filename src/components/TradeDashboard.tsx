@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTradeStore } from '@/store/tradeStore';
-import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { useTradesExport } from '@/hooks/useTradesExport';
+import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon as ChevronRightIconSolid } from '@heroicons/react/24/outline';
 
 export default function TradeDashboard() {
   const { trades, getTradeStats, clearAllTrades, deleteTrade, addTrade } = useTradeStore();
   const stats = getTradeStats();
+  const { downloadPDFReport } = useTradesExport({ trades, stats });
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showTopSymbols, setShowTopSymbols] = useState(false);
@@ -15,6 +17,8 @@ export default function TradeDashboard() {
   const [manualAmount, setManualAmount] = useState('');
   const [manualNotes, setManualNotes] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [tradesPerPage] = useState(10);
 
   // Fix hydration mismatch by ensuring client-side rendering
   useEffect(() => {
@@ -30,11 +34,24 @@ export default function TradeDashboard() {
   };
 
 
-  const getRecentTrades = () => {
-    return trades
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 10);
+  // Get all trades in chronological order (most recent first)
+  const getSortedTrades = () => {
+    return trades.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   };
+
+  // Pagination logic
+  const sortedTrades = getSortedTrades();
+  const totalPages = Math.ceil(sortedTrades.length / tradesPerPage);
+  const startIndex = (currentPage - 1) * tradesPerPage;
+  const endIndex = startIndex + tradesPerPage;
+  const currentTrades = sortedTrades.slice(startIndex, endIndex);
+
+  // Reset to page 1 if current page is beyond available pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
 
   const handleClearTrades = () => {
     if (showConfirmClear) {
@@ -79,6 +96,23 @@ export default function TradeDashboard() {
           setDeleteConfirmId(null);
         }
       }, 3000);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setDeleteConfirmId(null); // Clear any pending delete confirmations
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
     }
   };
 
@@ -344,14 +378,33 @@ export default function TradeDashboard() {
 
       {/* Recent Entries */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Entries</h3>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Trade Entries</h3>
+            {sortedTrades.length > 0 && (
+              <p className="text-sm text-gray-600 mt-1">
+                Showing {startIndex + 1}-{Math.min(endIndex, sortedTrades.length)} of {sortedTrades.length} trades
+              </p>
+            )}
+          </div>
+          {trades.length > 0 && (
+            <button
+              id="download-trades-pdf-button"
+              onClick={downloadPDFReport}
+              className="flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors text-sm font-medium border border-slate-300"
+            >
+              <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+              Download PDF
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
           {trades.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No entries yet. Use the chatbot to start logging trades.
             </div>
           ) : (
-            getRecentTrades().map((trade) => (
+            currentTrades.map((trade) => (
               <div key={trade.id} className={`flex justify-between items-center py-3 px-4 rounded-lg hover:opacity-90 transition-all ${
                 trade.amount >= 0 
                   ? 'bg-green-50 border-l-4 border-green-400' 
@@ -402,6 +455,73 @@ export default function TradeDashboard() {
             ))
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <ChevronLeftIcon className="h-4 w-4 mr-1" />
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === totalPages
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Next
+                <ChevronRightIconSolid className="h-4 w-4 ml-1" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

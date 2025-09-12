@@ -24,6 +24,7 @@ interface ScreenerControlsProps {
   setStrikeRange: (range: 'tight' | 'moderate' | 'wide' | 'extended') => void;
   loading: boolean;
   onRunScreener: () => void;
+  onClearFilters?: () => void;
 }
 
 export default function ScreenerControls({
@@ -46,15 +47,44 @@ export default function ScreenerControls({
   strikeRange,
   setStrikeRange,
   loading,
-  onRunScreener
+  onRunScreener,
+  onClearFilters
 }: ScreenerControlsProps) {
 
+  // Local state for spread selection UI - independent from global screener state
+  const [localSelectedSpreads, setLocalSelectedSpreads] = React.useState<number[]>(() => {
+    // Initialize with global state but then manage independently
+    return Array.isArray(selectedSpreads) ? [...selectedSpreads] : [0.15];
+  });
+
+  // Sync local state with global state only when global state changes from external sources
+  React.useEffect(() => {
+    if (Array.isArray(selectedSpreads) && selectedSpreads.length > 0) {
+      setLocalSelectedSpreads([...selectedSpreads]);
+    }
+  }, [selectedSpreads]);
+
   const toggleSpread = (spread: number) => {
-    setSelectedSpreads((prev: number[]) => 
-      prev.includes(spread) 
-        ? prev.filter((s: number) => s !== spread)
-        : [...prev, spread].sort((a: number, b: number) => a - b)
-    );
+    setLocalSelectedSpreads((prev) => {
+      const newSpreads = prev.includes(spread) 
+        ? prev.filter((s) => s !== spread)
+        : [...prev, spread].sort((a, b) => a - b);
+      return newSpreads;
+    });
+  };
+
+  // Update global state only when running screener
+  const handleRunScreener = () => {
+    setSelectedSpreads(localSelectedSpreads);
+    onRunScreener();
+  };
+
+  // Handle clear filters - reset both local and global state
+  const handleClearFilters = () => {
+    setLocalSelectedSpreads([0.15]); // Reset to default
+    if (onClearFilters) {
+      onClearFilters();
+    }
   };
 
   // Close all dropdowns
@@ -80,6 +110,48 @@ export default function ScreenerControls({
       dropdown?.classList.remove('hidden');
     }
   };
+
+  // Special handler for spreads dropdown to keep it open for multi-select
+  const toggleSpreadsDropdown = () => {
+    const dropdown = document.getElementById('spreads-dropdown');
+    const isHidden = dropdown?.classList.contains('hidden');
+    
+    // Close all other dropdowns first
+    document.getElementById('expiration-dropdown')?.classList.add('hidden');
+    document.getElementById('price-dropdown')?.classList.add('hidden');
+    document.getElementById('sector-dropdown')?.classList.add('hidden');
+    document.getElementById('volume-dropdown')?.classList.add('hidden');
+    document.getElementById('strike-dropdown')?.classList.add('hidden');
+    
+    // Toggle only the spreads dropdown
+    if (isHidden) {
+      dropdown?.classList.remove('hidden');
+    } else {
+      dropdown?.classList.add('hidden');
+    }
+  };
+
+  // Check if spreads dropdown is open for arrow rotation
+  const [isSpreadsOpen, setIsSpreadsOpen] = React.useState(false);
+  
+  React.useEffect(() => {
+    const checkDropdownState = () => {
+      const dropdown = document.getElementById('spreads-dropdown');
+      const isOpen = dropdown && !dropdown.classList.contains('hidden');
+      setIsSpreadsOpen(!!isOpen);
+    };
+    
+    // Check initially
+    checkDropdownState();
+    
+    // Set up mutation observer to watch for class changes
+    const dropdown = document.getElementById('spreads-dropdown');
+    if (dropdown) {
+      const observer = new MutationObserver(checkDropdownState);
+      observer.observe(dropdown, { attributes: true, attributeFilter: ['class'] });
+      return () => observer.disconnect();
+    }
+  }, []);
 
   // Add click outside listener
   React.useEffect(() => {
@@ -279,26 +351,38 @@ export default function ScreenerControls({
           />
         </div>
 
-        {/* Run Screen Button */}
+        {/* Action Buttons */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            Action
+            Actions
           </label>
-          <button
-            onClick={onRunScreener}
-            disabled={loading}
-            className="w-full h-11 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed text-sm"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Scanning...
-              </div>
-            ) : (
-              'Run Screen'
+          <div className="flex gap-2">
+            <button
+              onClick={handleRunScreener}
+              disabled={loading}
+              className="flex-1 h-11 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed text-sm"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Scanning...
+                </div>
+              ) : (
+                'Run Screen'
+              )}
+            </button>
+            {onClearFilters && (
+              <button
+                onClick={handleClearFilters}
+                disabled={loading}
+                className="h-11 px-4 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed text-sm"
+                title="Clear all filters and results"
+              >
+                Clear
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
       
@@ -456,17 +540,17 @@ export default function ScreenerControls({
         <div className="space-y-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
             <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
-            Exact Spreads ({selectedSpreads.length})
+            Exact Spreads ({localSelectedSpreads.length})
           </label>
           <div 
             className="relative group cursor-pointer dropdown-container"
-            onClick={() => toggleDropdown('spreads-dropdown')}
+            onClick={toggleSpreadsDropdown}
           >
             <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center justify-between">
               <span className="text-sm text-gray-900 font-medium">
-                {selectedSpreads.length === 0 ? 'Select spreads' : 
-                 selectedSpreads.length === 1 ? `$${selectedSpreads[0].toFixed(2)}` :
-                 `${selectedSpreads.length} spreads`}
+                {localSelectedSpreads.length === 0 ? 'Select spreads' : 
+                 localSelectedSpreads.length === 1 && localSelectedSpreads[0] != null ? `$${localSelectedSpreads[0].toFixed(2)}` :
+                 `${localSelectedSpreads.length} spreads`}
               </span>
               <svg className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -481,7 +565,7 @@ export default function ScreenerControls({
                 <div
                   key={spreadOption.value}
                   className={`px-4 py-3 cursor-pointer transition-all duration-200 flex items-center gap-3 ${
-                    selectedSpreads.includes(spreadOption.value)
+                    localSelectedSpreads.includes(spreadOption.value)
                       ? 'bg-cyan-50 text-cyan-900 border-l-4 border-cyan-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-cyan-300'
                   }`}
@@ -491,11 +575,11 @@ export default function ScreenerControls({
                   }}
                 >
                   <div className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
-                    selectedSpreads.includes(spreadOption.value)
+                    localSelectedSpreads.includes(spreadOption.value)
                       ? 'border-cyan-500 bg-cyan-500'
                       : 'border-gray-400'
                   }`}>
-                    {selectedSpreads.includes(spreadOption.value) && (
+                    {localSelectedSpreads.includes(spreadOption.value) && (
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -503,14 +587,23 @@ export default function ScreenerControls({
                   </div>
                   <div>
                     <div className={`font-medium ${
-                      selectedSpreads.includes(spreadOption.value) ? 'text-cyan-900' : 'text-gray-900'
-                    }`}>${spreadOption.value.toFixed(2)}</div>
+                      localSelectedSpreads.includes(spreadOption.value) ? 'text-cyan-900' : 'text-gray-900'
+                    }`}>${spreadOption.value != null ? spreadOption.value.toFixed(2) : '0.00'}</div>
                     <div className={`text-xs mt-1 ${
-                      selectedSpreads.includes(spreadOption.value) ? 'text-cyan-700' : 'text-gray-600'
+                      localSelectedSpreads.includes(spreadOption.value) ? 'text-cyan-700' : 'text-gray-600'
                     }`}>{spreadOption.label}</div>
                   </div>
                 </div>
               ))}
+              
+              {/* Multi-select footer */}
+              {localSelectedSpreads.length > 0 && (
+                <div className="border-t border-gray-200 px-4 py-2 bg-gray-50">
+                  <div className="text-xs text-gray-600 text-center">
+                    {localSelectedSpreads.length} spread{localSelectedSpreads.length === 1 ? '' : 's'} selected • Click outside to close
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

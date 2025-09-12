@@ -35,12 +35,17 @@ export default function SingleStockControls({
   onSubmit
 }: SingleStockControlsProps) {
 
+  // Ensure selectedSpreads is always an array (defensive programming for Zustand issues)
+  const safeSelectedSpreads = Array.isArray(selectedSpreads) ? selectedSpreads : [];
+
   const toggleSpread = (spread: number) => {
-    setSelectedSpreads((prev: number[]) => 
-      prev.includes(spread) 
-        ? prev.filter((s: number) => s !== spread)
-        : [...prev, spread].sort((a: number, b: number) => a - b)
-    );
+    setSelectedSpreads((prev: number[]) => {
+      // Ensure prev is an array
+      const safePrev = Array.isArray(prev) ? prev : [];
+      return safePrev.includes(spread) 
+        ? safePrev.filter((s: number) => s !== spread)
+        : [...safePrev, spread].sort((a: number, b: number) => a - b);
+    });
   };
 
   return (
@@ -114,7 +119,7 @@ export default function SingleStockControls({
         <div className="space-y-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
-            Spreads ({selectedSpreads.length})
+            Spreads ({safeSelectedSpreads.length})
           </label>
           <div 
             className="relative group cursor-pointer"
@@ -126,9 +131,9 @@ export default function SingleStockControls({
             <div className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm flex items-center">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-sm text-gray-900">
-                  {selectedSpreads.length === 0 ? 'Select' : 
-                   selectedSpreads.length === 1 ? `$${selectedSpreads[0].toFixed(2)}` :
-                   `${selectedSpreads.length} spreads`}
+                  {safeSelectedSpreads.length === 0 ? 'Select' : 
+                   safeSelectedSpreads.length === 1 && safeSelectedSpreads[0] != null ? `$${safeSelectedSpreads[0].toFixed(2)}` :
+                   `${safeSelectedSpreads.length} spreads`}
                 </span>
                 <svg className="w-4 h-4 text-blue-500 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -144,18 +149,18 @@ export default function SingleStockControls({
                 <div
                   key={spread.value}
                   className={`px-4 py-3 cursor-pointer transition-all duration-200 flex items-center gap-3 ${
-                    selectedSpreads.includes(spread.value)
+                    safeSelectedSpreads.includes(spread.value)
                       ? 'bg-cyan-50 text-cyan-900 border-l-4 border-cyan-500' 
                       : 'hover:bg-gray-50 border-l-4 border-transparent hover:border-cyan-300'
                   }`}
                   onClick={() => toggleSpread(spread.value)}
                 >
                   <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                    selectedSpreads.includes(spread.value)
+                    safeSelectedSpreads.includes(spread.value)
                       ? 'border-cyan-500 bg-cyan-500'
                       : 'border-gray-400'
                   }`}>
-                    {selectedSpreads.includes(spread.value) && (
+                    {safeSelectedSpreads.includes(spread.value) && (
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -163,10 +168,10 @@ export default function SingleStockControls({
                   </div>
                   <div className="flex-1">
                     <div className={`font-medium ${
-                      selectedSpreads.includes(spread.value) ? 'text-cyan-900' : 'text-gray-900'
+                      safeSelectedSpreads.includes(spread.value) ? 'text-cyan-900' : 'text-gray-900'
                     }`}>{spread.label}</div>
                     <div className={`text-xs mt-1 ${
-                      selectedSpreads.includes(spread.value) ? 'text-cyan-700' : 'text-gray-600'
+                      safeSelectedSpreads.includes(spread.value) ? 'text-cyan-700' : 'text-gray-600'
                     }`}>{spread.desc}</div>
                   </div>
                 </div>

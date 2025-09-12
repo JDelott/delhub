@@ -117,6 +117,7 @@ interface OptionsStore extends OptionsScreenerState {
 }
 
 export const useOptionsStore = create<OptionsStore>()(
+  // @ts-expect-error Complex Zustand typing issue with persist middleware
   persist(
     (set) => ({
       // Initial state
@@ -169,44 +170,48 @@ export const useOptionsStore = create<OptionsStore>()(
       error: null,
       
       // Actions for view states
-      setViewMode: (viewMode) => set({ viewMode }),
-      setOptionType: (optionType) => set({ optionType }),
+      setViewMode: (viewMode: ViewMode) => set({ viewMode }),
+      setOptionType: (optionType: OptionType) => set({ optionType }),
       
       // Actions for single stock states
-      setSymbol: (symbol) => set({ symbol }),
-      setExpirations: (expirations) => set({ expirations }),
-      setSelectedExpiration: (selectedExpiration) => set({ selectedExpiration }),
-      setOptionsData: (optionsData) => set({ optionsData }),
+      setSymbol: (symbol: string) => set({ symbol }),
+      setExpirations: (expirations: string[]) => set({ expirations }),
+      setSelectedExpiration: (selectedExpiration: string) => set({ selectedExpiration }),
+      setOptionsData: (optionsData: OptionsData | null) => set({ optionsData }),
       
       // Actions for screener states
-      setScreenerResults: (screenerResults) => set({ screenerResults }),
-      setCustomSymbols: (customSymbols) => set({ customSymbols }),
-      setExpirationFilter: (expirationFilter) => set({ expirationFilter }),
-      setPriceFilter: (priceFilter) => set({ priceFilter }),
-      setMaxStockPrice: (maxStockPrice) => set({ maxStockPrice }),
-      setMinAverageVolume: (minAverageVolume) => set({ minAverageVolume }),
+      setScreenerResults: (screenerResults: ScreenerResults | null) => set({ screenerResults }),
+      setCustomSymbols: (customSymbols: string) => set({ customSymbols }),
+      setExpirationFilter: (expirationFilter: 'all' | 'near' | 'far') => set({ expirationFilter }),
+      setPriceFilter: (priceFilter: 'all' | 'under50' | 'under25' | 'verified50') => set({ priceFilter }),
+      setMaxStockPrice: (maxStockPrice: number) => set({ maxStockPrice }),
+      setMinAverageVolume: (minAverageVolume: number) => set({ minAverageVolume }),
       
       // Actions for common states
-      setSelectedSpreads: (selectedSpreads) => set({ selectedSpreads }),
-      setMinBid: (minBid) => set({ minBid }),
-      setStrikeRange: (strikeRange) => set({ strikeRange }),
-      setSectorFilter: (sectorFilter) => set({ sectorFilter }),
+      setSelectedSpreads: (selectedSpreads: number[]) => set({ selectedSpreads }),
+      setMinBid: (minBid: number) => set({ minBid }),
+      setStrikeRange: (strikeRange: 'tight' | 'moderate' | 'wide' | 'extended') => set({ strikeRange }),
+      setSectorFilter: (sectorFilter: string) => set({ sectorFilter }),
       
       // Actions for trading states (non-persistent)
-      setTradeModal: (tradeModal) => set({ tradeModal }),
-      setIsExecutingTrade: (isExecutingTrade) => set({ isExecutingTrade }),
-      setTradeSuccess: (tradeSuccess) => set({ tradeSuccess }),
-      setTradeError: (tradeError) => set({ tradeError }),
+      setTradeModal: (tradeModal: TradeModalState) => set({ tradeModal }),
+      setIsExecutingTrade: (isExecutingTrade: boolean) => set({ isExecutingTrade }),
+      setTradeSuccess: (tradeSuccess: string | null) => set({ tradeSuccess }),
+      setTradeError: (tradeError: string | null) => set({ tradeError }),
       
       // Actions for batch trading states (non-persistent)
-      setSelectedOptions: (selectedOptions) => set({ selectedOptions }),
-      setBatchModal: (batchModal) => set({ batchModal }),
-      setIsExecutingBatchTrade: (isExecutingBatchTrade) => set({ isExecutingBatchTrade }),
-      setBatchTradeResults: (batchTradeResults) => set({ batchTradeResults }),
+      setSelectedOptions: (selectedOptions: Set<string>) => set({ selectedOptions }),
+      setBatchModal: (batchModal: BatchTradeModalState) => set({ batchModal }),
+      setIsExecutingBatchTrade: (isExecutingBatchTrade: boolean) => set({ isExecutingBatchTrade }),
+      setBatchTradeResults: (batchTradeResults: {
+        successful: number;
+        failed: number;
+        errors: string[];
+      } | null) => set({ batchTradeResults }),
       
       // Actions for loading and error states (non-persistent)
-      setLoading: (loading) => set({ loading }),
-      setError: (error) => set({ error }),
+      setLoading: (loading: boolean) => set({ loading }),
+      setError: (error: string | null) => set({ error }),
       
       // Utility actions
       clearScreenerResults: () => set({ screenerResults: null, selectedOptions: new Set() }),
@@ -249,6 +254,18 @@ export const useOptionsStore = create<OptionsStore>()(
         strikeRange: state.strikeRange,
         sectorFilter: state.sectorFilter,
       }),
+      // Merge function to handle hydration issues
+      merge: (persistedState: unknown, currentState: OptionsScreenerState) => {
+        const persisted = persistedState as Partial<OptionsScreenerState>;
+        return {
+          ...currentState,
+          ...persisted,
+          // Ensure selectedSpreads is always an array
+          selectedSpreads: Array.isArray(persisted?.selectedSpreads) 
+            ? persisted.selectedSpreads 
+            : currentState.selectedSpreads,
+        };
+      },
     }
   )
 );
