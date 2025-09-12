@@ -9,7 +9,8 @@ import {
   CurrencyDollarIcon,
   TrophyIcon,
   ExclamationTriangleIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline';
 import { useAnalyticsExport } from '@/hooks/useAnalyticsExport';
 
@@ -61,8 +62,8 @@ interface OverviewData {
   totalNetAmount?: number;
   avgDailyNetAmount?: number;
   winRate: number;
-  bestDay: DailyTradeSummary;
-  worstDay: DailyTradeSummary;
+  bestDay: DailyTradeSummary | null;
+  worstDay: DailyTradeSummary | null;
 }
 
 interface AnalyticsData {
@@ -76,7 +77,11 @@ export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'30d' | '90d' | '1y'>('30d');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'30d' | '90d' | '1y' | 'custom'>('30d');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [datePickerMode, setDatePickerMode] = useState<'day' | 'week' | 'range'>('day');
   const { downloadPDFReport, isExporting } = useAnalyticsExport(data);
 
   const formatCurrency = (amount: number) => {
@@ -88,17 +93,19 @@ export default function AnalyticsDashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString + 'T12:00:00').toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'America/Los_Angeles'
     });
   };
 
   const formatMonth = (monthString: string) => {
-    return new Date(monthString).toLocaleDateString('en-US', {
+    return new Date(monthString + 'T12:00:00').toLocaleDateString('en-US', {
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'America/Los_Angeles'
     });
   };
 
@@ -107,7 +114,14 @@ export default function AnalyticsDashboard() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/analytics?type=overview');
+      let url = '/api/analytics?type=overview';
+      
+      // Add date parameters for custom timeframe
+      if (selectedTimeframe === 'custom' && customStartDate && customEndDate) {
+        url += `&startDate=${customStartDate}&endDate=${customEndDate}`;
+      }
+      
+      const response = await fetch(url);
       const result = await response.json();
       
       if (!result.success) {
@@ -123,9 +137,57 @@ export default function AnalyticsDashboard() {
     }
   };
 
+  // Helper functions for date handling
+  const getTodayDate = () => {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  };
+
+  const getWeekStart = (date: string) => {
+    const d = new Date(date + 'T12:00:00');
+    const day = d.getDay();
+    const diff = d.getDate() - day; // Get Monday
+    const monday = new Date(d.setDate(diff));
+    return monday.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  };
+
+  const getWeekEnd = (date: string) => {
+    const d = new Date(date + 'T12:00:00');
+    const day = d.getDay();
+    const diff = d.getDate() - day + 6; // Get Sunday
+    const sunday = new Date(d.setDate(diff));
+    return sunday.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  };
+
+  const handleDateSelection = (mode: 'day' | 'week' | 'range', date?: string) => {
+    if (mode === 'day' && date) {
+      setCustomStartDate(date);
+      setCustomEndDate(date);
+      setSelectedTimeframe('custom');
+      setShowDatePicker(false);
+    } else if (mode === 'week' && date) {
+      setCustomStartDate(getWeekStart(date));
+      setCustomEndDate(getWeekEnd(date));
+      setSelectedTimeframe('custom');
+      setShowDatePicker(false);
+    }
+  };
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showDatePicker && !target.closest('.date-picker-container')) {
+        setShowDatePicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDatePicker]);
+
   useEffect(() => {
     fetchAnalyticsData();
-  }, [selectedTimeframe]);
+  }, [selectedTimeframe, customStartDate, customEndDate]);
 
   if (loading) {
     return (
@@ -175,20 +237,175 @@ export default function AnalyticsDashboard() {
     );
   }
 
+  // Check if the selected date range has no data
+  const hasNoDataInRange = data.overview.totalDays === 0;
+  const getDateRangeText = () => {
+    if (selectedTimeframe === 'custom' && customStartDate && customEndDate) {
+      if (customStartDate === customEndDate) {
+        return formatDate(customStartDate);
+      }
+      return `${formatDate(customStartDate)} - ${formatDate(customEndDate)}`;
+    }
+    return selectedTimeframe === '30d' ? 'Last 30 Days' : 
+           selectedTimeframe === '90d' ? 'Last 90 Days' : 'Last Year';
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Trading Analytics</h1>
         <div className="flex items-center space-x-3">
+          {/* Custom Date Picker */}
+          <div className="relative date-picker-container">
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="flex items-center px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors text-sm font-medium border border-blue-300"
+              title="Select custom date range"
+            >
+              <CalendarIcon className="h-4 w-4 mr-1" />
+              {selectedTimeframe === 'custom' && customStartDate && customEndDate ? (
+                customStartDate === customEndDate ? 
+                  formatDate(customStartDate) :
+                  `${formatDate(customStartDate)} - ${formatDate(customEndDate)}`
+              ) : (
+                'Select Date'
+              )}
+            </button>
+            
+            {showDatePicker && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                <div className="p-4 space-y-4">
+                  <h3 className="font-medium text-gray-900">Select Date Range</h3>
+                  
+                  {/* Date Mode Selector */}
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setDatePickerMode('day')}
+                      className={`px-3 py-1 text-xs rounded ${
+                        datePickerMode === 'day' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      Single Day
+                    </button>
+                    <button
+                      onClick={() => setDatePickerMode('week')}
+                      className={`px-3 py-1 text-xs rounded ${
+                        datePickerMode === 'week' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      Week
+                    </button>
+                    <button
+                      onClick={() => setDatePickerMode('range')}
+                      className={`px-3 py-1 text-xs rounded ${
+                        datePickerMode === 'range' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      Custom Range
+                    </button>
+                  </div>
+
+                  {/* Quick Date Options */}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => handleDateSelection('day', getTodayDate())}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                    >
+                      📅 Today ({formatDate(getTodayDate())})
+                    </button>
+                    <button
+                      onClick={() => handleDateSelection('week', getTodayDate())}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                    >
+                      📊 This Week ({formatDate(getWeekStart(getTodayDate()))} - {formatDate(getWeekEnd(getTodayDate()))})
+                    </button>
+                  </div>
+
+                  {/* Date Inputs */}
+                  {datePickerMode === 'range' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input
+                          type="date"
+                          value={customStartDate}
+                          onChange={(e) => setCustomStartDate(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input
+                          type="date"
+                          value={customEndDate}
+                          onChange={(e) => setCustomEndDate(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => setShowDatePicker(false)}
+                          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (customStartDate && customEndDate) {
+                              setSelectedTimeframe('custom');
+                              setShowDatePicker(false);
+                            }
+                          }}
+                          disabled={!customStartDate || !customEndDate}
+                          className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(datePickerMode === 'day' || datePickerMode === 'week') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+                      <input
+                        type="date"
+                        onChange={(e) => handleDateSelection(datePickerMode, e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Timeframe Selector */}
           <select
             value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value as '30d' | '90d' | '1y')}
+            onChange={(e) => {
+              const value = e.target.value as '30d' | '90d' | '1y' | 'custom';
+              if (value !== 'custom') {
+                setSelectedTimeframe(value);
+                setCustomStartDate('');
+                setCustomEndDate('');
+              }
+            }}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="30d">Last 30 Days</option>
             <option value="90d">Last 90 Days</option>
             <option value="1y">Last Year</option>
+            {selectedTimeframe === 'custom' && (
+              <option value="custom">Custom Range</option>
+            )}
           </select>
           
           {data && (
@@ -213,7 +430,38 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
+      {/* No Data State for Selected Range */}
+      {hasNoDataInRange && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+          <CalendarIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">No Trading Data Found</h3>
+          <p className="text-yellow-700 mb-4">
+            No trading activity recorded for <strong>{getDateRangeText()}</strong>
+          </p>
+          <div className="flex justify-center space-x-3">
+            <button
+              onClick={() => handleDateSelection('day', getTodayDate())}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              View Today
+            </button>
+            <button
+              onClick={() => {
+                setSelectedTimeframe('30d');
+                setCustomStartDate('');
+                setCustomEndDate('');
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
+            >
+              Last 30 Days
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Overview Stats */}
+      {!hasNoDataInRange && (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center">
@@ -500,6 +748,8 @@ export default function AnalyticsDashboard() {
           })}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

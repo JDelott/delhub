@@ -47,13 +47,23 @@ export async function GET(request: NextRequest) {
       }
 
       case 'overview': {
+        // Determine date range based on parameters
+        let summariesStartDate = startDate;
+        let summariesEndDate = endDate;
+        let summariesLimit = limit;
+
+        // If no custom dates provided, use defaults based on common timeframes
+        if (!summariesStartDate && !summariesEndDate) {
+          summariesLimit = 30; // Default to last 30 days
+        }
+
         // Get comprehensive overview data
         const [
           recentSummaries,
           monthlyPerformance,
           topSymbols
         ] = await Promise.all([
-          postgresService.getDailySummaries(undefined, undefined, 30), // Last 30 days
+          postgresService.getDailySummaries(summariesStartDate, summariesEndDate, summariesLimit),
           postgresService.getMonthlyPerformance(12), // Last 12 months
           postgresService.getTopSymbols(10) // Top 10 symbols
         ]);
@@ -71,16 +81,21 @@ export async function GET(request: NextRequest) {
         const winRate = recentSummaries.length > 0 ? 
           recentSummaries.filter(day => parseFloat((day.total_net_amount || day.total_amount).toString()) > 0).length / recentSummaries.length * 100 : 0;
 
-        // Get best and worst days based on net amount
-        const bestDay = recentSummaries.reduce((best, day) => 
-          parseFloat((day.total_net_amount || day.total_amount).toString()) > parseFloat((best.total_net_amount || best.total_amount).toString()) ? day : best, 
-          recentSummaries[0] || { total_amount: 0 }
-        );
+        // Get best and worst days based on net amount (only if we have data)
+        let bestDay = null;
+        let worstDay = null;
         
-        const worstDay = recentSummaries.reduce((worst, day) => 
-          parseFloat((day.total_net_amount || day.total_amount).toString()) < parseFloat((worst.total_net_amount || worst.total_amount).toString()) ? day : worst, 
-          recentSummaries[0] || { total_amount: 0 }
-        );
+        if (recentSummaries.length > 0) {
+          bestDay = recentSummaries.reduce((best, day) => 
+            parseFloat((day.total_net_amount || day.total_amount).toString()) > parseFloat((best.total_net_amount || best.total_amount).toString()) ? day : best, 
+            recentSummaries[0]
+          );
+          
+          worstDay = recentSummaries.reduce((worst, day) => 
+            parseFloat((day.total_net_amount || day.total_amount).toString()) < parseFloat((worst.total_net_amount || worst.total_amount).toString()) ? day : worst, 
+            recentSummaries[0]
+          );
+        }
 
         return NextResponse.json({
           success: true,
