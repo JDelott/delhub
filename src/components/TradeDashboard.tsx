@@ -3,12 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import { useTradeStore } from '@/store/tradeStore';
 import { useTradesExport } from '@/hooks/useTradesExport';
-import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon as ChevronRightIconSolid } from '@heroicons/react/24/outline';
+import { useDailySummary } from '@/hooks/useDailySummary';
+import DailySummaryPreview from '@/components/DailySummaryPreview';
+import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon as ChevronRightIconSolid, CloudArrowUpIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function TradeDashboard() {
   const { trades, getTradeStats, clearAllTrades, deleteTrade, addTrade } = useTradeStore();
   const stats = getTradeStats();
   const { downloadPDFReport } = useTradesExport({ trades, stats });
+  const { 
+    logDailySummary, 
+    isLogging, 
+    lastLoggedDate
+  } = useDailySummary();
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showTopSymbols, setShowTopSymbols] = useState(false);
@@ -19,11 +26,14 @@ export default function TradeDashboard() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [tradesPerPage] = useState(10);
+  const [logMessage, setLogMessage] = useState<string | null>(null);
+  const [showSummaryPreview, setShowSummaryPreview] = useState(false);
 
   // Fix hydration mismatch by ensuring client-side rendering
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -114,6 +124,41 @@ export default function TradeDashboard() {
     if (currentPage < totalPages) {
       handlePageChange(currentPage + 1);
     }
+  };
+
+  const handleLogDailySummary = () => {
+    if (trades.length === 0) {
+      setLogMessage('No trades to save');
+      setTimeout(() => setLogMessage(null), 3000);
+      return;
+    }
+    setShowSummaryPreview(true);
+  };
+
+  const handleConfirmSave = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const tradesData = trades.map(trade => ({
+        id: trade.id,
+        symbol: trade.symbol,
+        amount: trade.amount,
+        timestamp: typeof trade.timestamp === 'string' ? trade.timestamp : trade.timestamp.toISOString(),
+        notes: trade.notes
+      }));
+
+      const result = await logDailySummary(tradesData, today);
+      
+      if (result.success) {
+        setLogMessage(`✅ Saved ${result.data?.entriesCount} trades for ${today}`);
+        setShowSummaryPreview(false);
+      } else {
+        setLogMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setLogMessage(`❌ Failed to save daily summary`);
+    }
+    
+    setTimeout(() => setLogMessage(null), 5000);
   };
 
 
@@ -272,6 +317,42 @@ export default function TradeDashboard() {
             )}
           </div>
           
+          {/* Log Daily Summary Button */}
+          <button
+            onClick={handleLogDailySummary}
+            disabled={isLogging || trades.length === 0}
+            className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              trades.length === 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : isLogging
+                ? 'bg-blue-100 text-blue-600 cursor-wait'
+                : lastLoggedDate === new Date().toISOString().split('T')[0]
+                ? 'bg-green-100 text-green-700'
+                : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+            }`}
+            title={trades.length === 0 
+              ? 'No trades to save' 
+              : `Save ${trades.length} trades (${formatCurrency(stats.totalAmount)} total)`
+            }
+          >
+            {isLogging ? (
+              <>
+                <div className="animate-spin h-4 w-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                Saving...
+              </>
+            ) : lastLoggedDate === new Date().toISOString().split('T')[0] ? (
+              <>
+                <CheckCircleIcon className="h-4 w-4 mr-1" />
+                Saved Today
+              </>
+            ) : (
+              <>
+                <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                Save Daily Summary ({trades.length})
+              </>
+            )}
+          </button>
+          
           {/* Clear All Trades Button */}
           <button
             onClick={handleClearTrades}
@@ -285,6 +366,17 @@ export default function TradeDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Log Message Display */}
+      {logMessage && (
+        <div className={`p-3 rounded-lg text-sm font-medium ${
+          logMessage.startsWith('✅') 
+            ? 'bg-green-50 text-green-800 border border-green-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
+          {logMessage}
+        </div>
+      )}
 
       {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -523,6 +615,17 @@ export default function TradeDashboard() {
           </div>
         )}
       </div>
+
+      {/* Daily Summary Preview Modal */}
+      {showSummaryPreview && (
+        <DailySummaryPreview
+          trades={trades}
+          stats={stats}
+          onSave={handleConfirmSave}
+          onCancel={() => setShowSummaryPreview(false)}
+          isLoading={isLogging}
+        />
+      )}
     </div>
   );
 }
