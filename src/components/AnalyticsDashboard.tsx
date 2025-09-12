@@ -8,8 +8,10 @@ import {
   CalendarDaysIcon,
   CurrencyDollarIcon,
   TrophyIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
+import { useAnalyticsExport } from '@/hooks/useAnalyticsExport';
 
 interface DailyTradeSummary {
   id: number;
@@ -69,6 +71,7 @@ export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<'30d' | '90d' | '1y'>('30d');
+  const { downloadPDFReport, isExporting } = useAnalyticsExport(data);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -171,7 +174,7 @@ export default function AnalyticsDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Trading Analytics</h1>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <select
             value={selectedTimeframe}
             onChange={(e) => setSelectedTimeframe(e.target.value as '30d' | '90d' | '1y')}
@@ -181,6 +184,26 @@ export default function AnalyticsDashboard() {
             <option value="90d">Last 90 Days</option>
             <option value="1y">Last Year</option>
           </select>
+          
+          {data && (
+            <button
+              onClick={downloadPDFReport}
+              disabled={isExporting}
+              className="flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 disabled:bg-slate-50 text-slate-700 disabled:text-slate-400 rounded-lg transition-colors text-sm font-medium border border-slate-300"
+            >
+              {isExporting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-slate-600 border-t-transparent rounded-full"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  Download PDF
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
