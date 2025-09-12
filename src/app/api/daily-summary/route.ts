@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { postgresService } from '@/lib/postgres-service';
+import { calculateCommission, calculateNetAmount } from '@/store/tradeStore';
 
 interface TradeData {
   id: string;
@@ -7,6 +8,8 @@ interface TradeData {
   amount: number;
   timestamp: string;
   notes?: string;
+  commissionRate?: number;
+  contractCount?: number;
 }
 
 interface DailySummaryRequest {
@@ -28,31 +31,46 @@ export async function POST(request: NextRequest) {
     // Use provided date or default to today
     const tradeDate = date || new Date().toISOString().split('T')[0];
 
-    // Calculate summary statistics
+    // Calculate summary statistics including commissions
     const totalTrades = trades.length;
     const totalAmount = trades.reduce((sum, trade) => sum + trade.amount, 0);
+    const totalCommissions = trades.reduce((sum, trade) => sum + calculateCommission(trade), 0);
+    const totalNetAmount = trades.reduce((sum, trade) => sum + calculateNetAmount(trade), 0);
+    
     const averageAmount = totalTrades > 0 ? totalAmount / totalTrades : 0;
-    const positiveEntries = trades.filter(trade => trade.amount > 0).length;
-    const negativeEntries = trades.filter(trade => trade.amount < 0).length;
+    const averageNetAmount = totalTrades > 0 ? totalNetAmount / totalTrades : 0;
+    
+    const positiveEntries = trades.filter(trade => calculateNetAmount(trade) > 0).length;
+    const negativeEntries = trades.filter(trade => calculateNetAmount(trade) < 0).length;
     const totalGains = trades.filter(trade => trade.amount > 0).reduce((sum, trade) => sum + trade.amount, 0);
     const totalLosses = Math.abs(trades.filter(trade => trade.amount < 0).reduce((sum, trade) => sum + trade.amount, 0));
 
-    // Calculate symbol performance
+    // Calculate symbol performance including commissions
     const symbolTotals = trades.reduce((acc, trade) => {
       if (!acc[trade.symbol]) {
-        acc[trade.symbol] = { total: 0, count: 0 };
+        acc[trade.symbol] = { 
+          total: 0, 
+          count: 0, 
+          totalCommissions: 0, 
+          totalNet: 0 
+        };
       }
       acc[trade.symbol].total += trade.amount;
+      acc[trade.symbol].totalCommissions += calculateCommission(trade);
+      acc[trade.symbol].totalNet += calculateNetAmount(trade);
       acc[trade.symbol].count += 1;
       return acc;
-    }, {} as Record<string, { total: number; count: number }>);
+    }, {} as Record<string, { total: number; count: number; totalCommissions: number; totalNet: number }>);
 
     const symbolPerformances = Object.entries(symbolTotals).map(([symbol, data]) => ({
       trade_date: tradeDate,
       symbol,
       trade_count: data.count,
       total_amount: data.total,
-      average_amount: data.total / data.count
+      average_amount: data.total / data.count,
+      total_commissions: data.totalCommissions,
+      total_net_amount: data.totalNet,
+      average_net_amount: data.totalNet / data.count
     }));
 
     // Prepare trade entries for database
@@ -61,7 +79,9 @@ export async function POST(request: NextRequest) {
       symbol: trade.symbol,
       amount: trade.amount,
       notes: trade.notes,
-      entry_timestamp: trade.timestamp
+      entry_timestamp: trade.timestamp,
+      commission_rate: trade.commissionRate,
+      contract_count: trade.contractCount
     }));
 
     // Save to database
@@ -73,7 +93,10 @@ export async function POST(request: NextRequest) {
       positive_entries: positiveEntries,
       negative_entries: negativeEntries,
       total_gains: totalGains,
-      total_losses: totalLosses
+      total_losses: totalLosses,
+      total_commissions: totalCommissions,
+      total_net_amount: totalNetAmount,
+      average_net_amount: averageNetAmount
     });
 
     await postgresService.saveDailySymbolPerformance(symbolPerformances);

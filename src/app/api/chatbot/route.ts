@@ -47,10 +47,18 @@ Users will say things like:
 - "AAPL $50" (AAPL with $50 amount)  
 - "TSLA $25 profit" (TSLA with $25 amount)
 - "NVDA $10 loss" (NVDA with -$10 amount)
+- "BAX $100 3 contracts" (BAX with $100, 3 contracts)
+- "SRPT $50 16 cent commission" (SRPT with $50, $0.16 commission per contract)
+
+## Commission Handling:
+- Default: $0.16 per contract, 2 contracts (total $0.32 commission)
+- Users can specify different rates: "20 cent commission" or "0.20 commission"
+- Users can specify contract count: "3 contracts" or "5x"
+- Show both gross and net amounts when confirming trades
 
 ## Response Guidelines:
 - Keep responses very brief and friendly
-- Confirm what you logged: "Logged SRPT +$2.00"
+- Confirm what you logged with net amount: "Logged SRPT +$2.00 gross, +$1.68 net (after $0.32 commission)"
 - Don't ask for additional details unless the format is completely unclear
 - Focus on quick acknowledgment and running totals
 - If you detect a trade, just confirm it was logged
@@ -104,6 +112,8 @@ interface SimpleTradeEntry {
   symbol: string;
   amount: number;
   notes?: string;
+  commissionRate?: number;
+  contractCount?: number;
 }
 
 function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
@@ -270,10 +280,35 @@ function parseTradeFromMessage(message: string): SimpleTradeEntry | null {
     return null;
   }
 
+  // Extract commission info if mentioned, otherwise use defaults
+  let commissionRate = 0.16; // Default $0.16 per contract
+  let contractCount = 2; // Default 2 contracts
+  
+  // Look for commission rate mentions like "0.16 commission" or "16 cent commission"
+  const commissionMatch = cleanedMessage.match(/(?:(\d+(?:\.\d{1,2})?)\s*(?:cent|cents|commission))|(?:\$?(\d+(?:\.\d{1,2})?)\s*commission)/i);
+  if (commissionMatch) {
+    const commValue = parseFloat(commissionMatch[1] || commissionMatch[2]);
+    if (commValue < 5) { // If less than 5, assume it's dollars
+      commissionRate = commValue;
+    } else { // Otherwise assume it's cents, convert to dollars
+      commissionRate = commValue / 100;
+    }
+    console.log('✅ Found commission rate:', commissionRate);
+  }
+  
+  // Look for contract count mentions like "3 contracts" or "5x"
+  const contractMatch = cleanedMessage.match(/(?:(\d+)\s*(?:contracts?|x))|(?:(\d+)\s*(?:contract|contracts))/i);
+  if (contractMatch) {
+    contractCount = parseInt(contractMatch[1] || contractMatch[2]);
+    console.log('✅ Found contract count:', contractCount);
+  }
+
   const tradeData = {
     symbol,
     amount,
-    notes: message.trim() // Keep original message for notes
+    notes: message.trim(), // Keep original message for notes
+    commissionRate,
+    contractCount
   };
   
   console.log('🎯 Parsed trade data:', tradeData);

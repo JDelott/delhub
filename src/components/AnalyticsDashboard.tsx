@@ -23,6 +23,9 @@ interface DailyTradeSummary {
   negative_entries: number;
   total_gains: number;
   total_losses: number;
+  total_commissions: number;
+  total_net_amount: number;
+  average_net_amount: number;
   created_at: string;
   updated_at: string;
 }
@@ -54,6 +57,9 @@ interface OverviewData {
   avgDailyAmount: number;
   totalGains: number;
   totalLosses: number;
+  totalCommissions?: number;
+  totalNetAmount?: number;
+  avgDailyNetAmount?: number;
   winRate: number;
   bestDay: DailyTradeSummary;
   worstDay: DailyTradeSummary;
@@ -208,7 +214,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center">
             <CalendarDaysIcon className="h-8 w-8 text-blue-500" />
@@ -233,9 +239,21 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center">
             <CurrencyDollarIcon className={`h-8 w-8 ${data.overview.totalAmount >= 0 ? 'text-green-500' : 'text-red-500'}`} />
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total P&L</p>
+              <p className="text-sm font-medium text-gray-500">Gross P&L</p>
               <p className={`text-2xl font-bold ${data.overview.totalAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(data.overview.totalAmount)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 border-2 border-blue-200">
+          <div className="flex items-center">
+            <CurrencyDollarIcon className={`h-8 w-8 ${data.overview.totalNetAmount >= 0 ? 'text-blue-500' : 'text-red-500'}`} />
+            <div className="ml-3">
+              <p className="text-sm font-medium text-blue-600">Net P&L</p>
+              <p className={`text-2xl font-bold ${data.overview.totalNetAmount >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                {formatCurrency(data.overview.totalNetAmount || 0)}
               </p>
             </div>
           </div>
@@ -260,8 +278,8 @@ export default function AnalyticsDashboard() {
               <span className="text-blue-600 font-bold text-sm">Avg</span>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Avg Daily P&L</p>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(data.overview.avgDailyAmount)}</p>
+              <p className="text-sm font-medium text-gray-500">Avg Daily Net P&L</p>
+              <p className="text-xl font-bold text-gray-900">{formatCurrency(data.overview.avgDailyNetAmount || data.overview.avgDailyAmount)}</p>
             </div>
           </div>
         </div>
@@ -297,6 +315,43 @@ export default function AnalyticsDashboard() {
                 {data.overview.totalLosses > 0 ? (data.overview.totalGains / data.overview.totalLosses).toFixed(2) : '∞'}
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Commission Analytics */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+          <CurrencyDollarIcon className="h-5 w-5 text-orange-500 mr-2" />
+          Commission Analysis
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-500 mb-2">Total Commissions Paid</p>
+            <p className="text-2xl font-bold text-orange-600">
+              {formatCurrency(data.overview.totalCommissions || 0)}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-500 mb-2">Commission Impact</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatCurrency((data.overview.totalAmount || 0) - (data.overview.totalNetAmount || 0))}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {data.overview.totalAmount !== 0 ? 
+                `${(((data.overview.totalAmount || 0) - (data.overview.totalNetAmount || 0)) / Math.abs(data.overview.totalAmount || 1) * 100).toFixed(1)}% of gross P&L` : 
+                '0% of gross P&L'
+              }
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-500 mb-2">Avg Commission per Trade</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {data.overview.totalTrades > 0 ? 
+                formatCurrency((data.overview.totalCommissions || 0) / data.overview.totalTrades) : 
+                formatCurrency(0)
+              }
+            </p>
           </div>
         </div>
       </div>
@@ -407,27 +462,42 @@ export default function AnalyticsDashboard() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Daily Performance</h3>
         <div className="space-y-3">
-          {data.recentSummaries.slice(0, 15).map((day) => (
-            <div key={day.id} className={`flex items-center justify-between py-3 px-4 rounded-lg ${
-              day.total_amount >= 0 ? 'bg-green-50 border-l-4 border-green-400' : 'bg-red-50 border-l-4 border-red-400'
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`w-3 h-3 rounded-full ${day.total_amount >= 0 ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                <div>
-                  <span className="font-medium text-gray-900">{formatDate(day.trade_date)}</span>
-                  <p className="text-sm text-gray-500">{day.total_trades} trades</p>
+          {data.recentSummaries.slice(0, 15).map((day) => {
+            const netAmount = day.total_net_amount ?? day.total_amount;
+            const avgNetAmount = day.average_net_amount ?? day.average_amount;
+            const commissions = day.total_commissions ?? 0;
+            return (
+              <div key={day.id} className={`flex items-center justify-between py-3 px-4 rounded-lg ${
+                netAmount >= 0 ? 'bg-blue-50 border-l-4 border-blue-400' : 'bg-red-50 border-l-4 border-red-400'
+              }`}>
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${netAmount >= 0 ? 'bg-blue-400' : 'bg-red-400'}`}></div>
+                  <div>
+                    <span className="font-medium text-gray-900">{formatDate(day.trade_date)}</span>
+                    <p className="text-sm text-gray-500">
+                      {day.total_trades} trades • {formatCurrency(commissions)} commissions
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex flex-col items-end space-y-1">
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">Gross: </span>
+                      <span className={`text-sm font-medium ${day.total_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(day.total_amount)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">Net: </span>
+                      <span className={`font-bold text-lg ${netAmount >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                        {formatCurrency(netAmount)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <span className={`font-bold text-lg ${day.total_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(day.total_amount)}
-                </span>
-                <p className="text-sm text-gray-500">
-                  Avg: {formatCurrency(day.average_amount)}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

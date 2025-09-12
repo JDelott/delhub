@@ -30,6 +30,9 @@ export interface DailyTradeSummary {
   negative_entries: number;
   total_gains: number;
   total_losses: number;
+  total_commissions: number;
+  total_net_amount: number;
+  average_net_amount: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +44,9 @@ export interface DailySymbolPerformance {
   trade_count: number;
   total_amount: number;
   average_amount: number;
+  total_commissions: number;
+  total_net_amount: number;
+  average_net_amount: number;
   created_at?: string;
 }
 
@@ -51,6 +57,10 @@ export interface TradeEntry {
   amount: number;
   notes?: string;
   entry_timestamp: string; // ISO timestamp
+  commission_rate?: number;
+  contract_count?: number;
+  total_commission?: number; // Computed field
+  net_amount?: number; // Computed field
   created_at?: string;
 }
 
@@ -105,8 +115,8 @@ export class PostgresService {
       
       const query = `
         INSERT INTO daily_trade_summaries 
-        (trade_date, total_trades, total_amount, average_amount, positive_entries, negative_entries, total_gains, total_losses)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (trade_date, total_trades, total_amount, average_amount, positive_entries, negative_entries, total_gains, total_losses, total_commissions, total_net_amount, average_net_amount)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         ON CONFLICT (trade_date) 
         DO UPDATE SET 
           total_trades = EXCLUDED.total_trades,
@@ -116,6 +126,9 @@ export class PostgresService {
           negative_entries = EXCLUDED.negative_entries,
           total_gains = EXCLUDED.total_gains,
           total_losses = EXCLUDED.total_losses,
+          total_commissions = EXCLUDED.total_commissions,
+          total_net_amount = EXCLUDED.total_net_amount,
+          average_net_amount = EXCLUDED.average_net_amount,
           updated_at = CURRENT_TIMESTAMP
         RETURNING *
       `;
@@ -128,7 +141,10 @@ export class PostgresService {
         summary.positive_entries,
         summary.negative_entries,
         summary.total_gains,
-        summary.total_losses
+        summary.total_losses,
+        summary.total_commissions,
+        summary.total_net_amount,
+        summary.average_net_amount
       ];
       
       const result = await client.query(query, values);
@@ -158,8 +174,8 @@ export class PostgresService {
       for (const perf of performances) {
         const query = `
           INSERT INTO daily_symbol_performance 
-          (trade_date, symbol, trade_count, total_amount, average_amount)
-          VALUES ($1, $2, $3, $4, $5)
+          (trade_date, symbol, trade_count, total_amount, average_amount, total_commissions, total_net_amount, average_net_amount)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `;
         
         const values = [
@@ -167,7 +183,10 @@ export class PostgresService {
           perf.symbol,
           perf.trade_count,
           perf.total_amount,
-          perf.average_amount
+          perf.average_amount,
+          perf.total_commissions,
+          perf.total_net_amount,
+          perf.average_net_amount
         ];
         
         await client.query(query, values);
@@ -195,8 +214,8 @@ export class PostgresService {
       for (const entry of entries) {
         const query = `
           INSERT INTO trade_entries 
-          (trade_date, symbol, amount, notes, entry_timestamp)
-          VALUES ($1, $2, $3, $4, $5)
+          (trade_date, symbol, amount, notes, entry_timestamp, commission_rate, contract_count)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
         `;
         
         const values = [
@@ -204,7 +223,9 @@ export class PostgresService {
           entry.symbol,
           entry.amount,
           entry.notes || null,
-          entry.entry_timestamp
+          entry.entry_timestamp,
+          entry.commission_rate || 0.16,
+          entry.contract_count || 2
         ];
         
         await client.query(query, values);

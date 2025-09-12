@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTradeStore } from '@/store/tradeStore';
+import { useTradeStore, calculateCommission, calculateNetAmount } from '@/store/tradeStore';
 import { useTradesExport } from '@/hooks/useTradesExport';
 import { useDailySummary } from '@/hooks/useDailySummary';
 import DailySummaryPreview from '@/components/DailySummaryPreview';
@@ -23,6 +23,8 @@ export default function TradeDashboard() {
   const [manualSymbol, setManualSymbol] = useState('');
   const [manualAmount, setManualAmount] = useState('');
   const [manualNotes, setManualNotes] = useState('');
+  const [manualCommissionRate, setManualCommissionRate] = useState('0.16');
+  const [manualContractCount, setManualContractCount] = useState('2');
   const [isHydrated, setIsHydrated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [tradesPerPage] = useState(10);
@@ -79,18 +81,25 @@ export default function TradeDashboard() {
     if (!manualSymbol.trim() || !manualAmount.trim()) return;
     
     const amount = parseFloat(manualAmount);
-    if (isNaN(amount)) return;
+    const commissionRate = parseFloat(manualCommissionRate);
+    const contractCount = parseInt(manualContractCount);
+    
+    if (isNaN(amount) || isNaN(commissionRate) || isNaN(contractCount)) return;
     
     addTrade({
       symbol: manualSymbol.trim().toUpperCase(),
       amount: amount,
-      notes: manualNotes.trim() || undefined
+      notes: manualNotes.trim() || undefined,
+      commissionRate: commissionRate,
+      contractCount: contractCount
     });
     
     // Reset form
     setManualSymbol('');
     setManualAmount('');
     setManualNotes('');
+    setManualCommissionRate('0.16');
+    setManualContractCount('2');
     setShowManualEntry(false);
   };
 
@@ -217,33 +226,82 @@ export default function TradeDashboard() {
             </button>
             
             {showManualEntry && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+              <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
                 <form onSubmit={handleManualEntry} className="p-4 space-y-3">
                   <h3 className="font-medium text-gray-900 mb-3">Add Manual Entry</h3>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
-                    <input
-                      type="text"
-                      value={manualSymbol}
-                      onChange={(e) => setManualSymbol(e.target.value)}
-                      placeholder="e.g. AAPL"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
+                      <input
+                        type="text"
+                        value={manualSymbol}
+                        onChange={(e) => setManualSymbol(e.target.value)}
+                        placeholder="e.g. AAPL"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Gross Amount ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={manualAmount}
+                        onChange={(e) => setManualAmount(e.target.value)}
+                        placeholder="e.g. 150.00 or -75.50"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={manualAmount}
-                      onChange={(e) => setManualAmount(e.target.value)}
-                      placeholder="e.g. 150.00 or -75.50"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Commission Rate ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={manualCommissionRate}
+                        onChange={(e) => setManualCommissionRate(e.target.value)}
+                        placeholder="0.16"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Contracts</label>
+                      <input
+                        type="number"
+                        value={manualContractCount}
+                        onChange={(e) => setManualContractCount(e.target.value)}
+                        placeholder="2"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Commission Preview */}
+                  <div className="bg-orange-50 border border-orange-200 rounded-md p-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Commission:</span>
+                      <span className="text-orange-600 font-medium">
+                        {formatCurrency((parseFloat(manualCommissionRate) || 0) * (parseInt(manualContractCount) || 0))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span className="text-gray-700">Net Amount:</span>
+                      <span className={`${
+                        ((parseFloat(manualAmount) || 0) - (parseFloat(manualCommissionRate) || 0) * (parseInt(manualContractCount) || 0)) >= 0 
+                          ? 'text-blue-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {formatCurrency((parseFloat(manualAmount) || 0) - (parseFloat(manualCommissionRate) || 0) * (parseInt(manualContractCount) || 0))}
+                      </span>
+                    </div>
                   </div>
                   
                   <div>
@@ -298,17 +356,23 @@ export default function TradeDashboard() {
                     <p className="text-gray-400 text-xs py-2">No entries</p>
                   ) : (
                     stats.topSymbols.slice(0, 5).map((symbolData, index) => (
-                      <div key={symbolData.symbol} className="flex items-center justify-between py-1 text-xs">
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-gray-400 font-mono w-3">{index + 1}.</span>
-                          <span className="font-bold text-gray-900">{symbolData.symbol}</span>
-                          <span className="text-gray-400">({symbolData.count})</span>
+                      <div key={symbolData.symbol} className="py-1 text-xs">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-gray-400 font-mono w-3">{index + 1}.</span>
+                            <span className="font-bold text-gray-900">{symbolData.symbol}</span>
+                            <span className="text-gray-400">({symbolData.count})</span>
+                          </div>
+                          <span className={`font-bold ${
+                            symbolData.netTotal >= 0 ? 'text-blue-600' : 'text-red-600'
+                          }`}>
+                            {formatCurrency(symbolData.netTotal)}
+                          </span>
                         </div>
-                        <span className={`font-bold ${
-                          symbolData.total >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {formatCurrency(symbolData.total)}
-                        </span>
+                        <div className="flex items-center justify-between mt-0.5 text-xs">
+                          <span className="text-gray-400 ml-5">Gross: {formatCurrency(symbolData.total)}</span>
+                          <span className="text-orange-600">-{formatCurrency(symbolData.totalCommissions)} comm</span>
+                        </div>
                       </div>
                     ))
                   )}
@@ -379,7 +443,7 @@ export default function TradeDashboard() {
       )}
 
       {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
             <ChartBarIcon className="h-6 w-6 text-blue-500" />
@@ -390,6 +454,7 @@ export default function TradeDashboard() {
           </div>
         </div>
 
+        {/* Gross Total (Before Commissions) */}
         <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
@@ -402,7 +467,7 @@ export default function TradeDashboard() {
               )}
             </div>
             <div className="ml-2">
-              <p className="text-sm font-medium text-gray-500">Total Amount</p>
+              <p className="text-xs font-medium text-gray-500">Gross Total</p>
               <p className={`text-lg font-bold ${
                 stats.totalAmount >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
@@ -412,14 +477,50 @@ export default function TradeDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-3">
+        {/* Net Total (After Commissions) */}
+        <div className="bg-white rounded-lg shadow-md p-3 border-2 border-blue-200">
           <div className="flex items-center">
-            <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-xs">Avg</span>
+            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+              stats.totalNetAmount >= 0 ? 'bg-blue-100' : 'bg-red-100'
+            }`}>
+              {stats.totalNetAmount >= 0 ? (
+                <ArrowTrendingUpIcon className="h-5 w-5 text-blue-600" />
+              ) : (
+                <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
+              )}
             </div>
             <div className="ml-2">
-              <p className="text-sm font-medium text-gray-500">Average</p>
-              <p className="text-lg font-bold text-gray-900">{formatCurrency(stats.averageAmount)}</p>
+              <p className="text-xs font-medium text-blue-600">Net Total</p>
+              <p className={`text-lg font-bold ${
+                stats.totalNetAmount >= 0 ? 'text-blue-600' : 'text-red-600'
+              }`}>
+                {formatCurrency(stats.totalNetAmount)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Commissions */}
+        <div className="bg-white rounded-lg shadow-md p-3">
+          <div className="flex items-center">
+            <div className="h-6 w-6 bg-orange-100 rounded-full flex items-center justify-center">
+              <span className="text-orange-600 font-bold text-xs">$</span>
+            </div>
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-500">Commissions</p>
+              <p className="text-lg font-bold text-orange-600">{formatCurrency(stats.totalCommissions)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-3">
+          <div className="flex items-center">
+            <div className="h-6 w-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <span className="text-gray-600 font-bold text-xs">Avg</span>
+            </div>
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-500">Avg Net</p>
+              <p className="text-lg font-bold text-gray-900">{formatCurrency(stats.averageNetAmount)}</p>
             </div>
           </div>
         </div>
@@ -430,37 +531,37 @@ export default function TradeDashboard() {
               <span className="text-purple-600 font-bold text-xs">+/-</span>
             </div>
             <div className="ml-2">
-              <p className="text-sm font-medium text-gray-500">Wins/Losses</p>
+              <p className="text-xs font-medium text-gray-500">Wins/Losses</p>
               <p className="text-lg font-bold text-gray-900">{stats.positiveEntries}/{stats.negativeEntries}</p>
             </div>
           </div>
         </div>
 
-        {/* Total Gains Card */}
+        {/* Total Gains Card (Net) */}
         <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
             <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
               <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
             </div>
             <div className="ml-2">
-              <p className="text-sm font-medium text-gray-500">Total Gains</p>
+              <p className="text-xs font-medium text-gray-500">Net Gains</p>
               <p className="text-lg font-bold text-green-600">
-                {formatCurrency(trades.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0))}
+                {formatCurrency(trades.filter(t => calculateNetAmount(t) > 0).reduce((sum, t) => sum + calculateNetAmount(t), 0))}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Total Losses Card */}
+        {/* Total Losses Card (Net) */}
         <div className="bg-white rounded-lg shadow-md p-3">
           <div className="flex items-center">
             <div className="h-6 w-6 bg-red-100 rounded-full flex items-center justify-center">
               <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
             </div>
             <div className="ml-2">
-              <p className="text-sm font-medium text-gray-500">Total Losses</p>
+              <p className="text-xs font-medium text-gray-500">Net Losses</p>
               <p className="text-lg font-bold text-red-600">
-                {formatCurrency(Math.abs(trades.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0)))}
+                {formatCurrency(Math.abs(trades.filter(t => calculateNetAmount(t) < 0).reduce((sum, t) => sum + calculateNetAmount(t), 0)))}
               </p>
             </div>
           </div>
@@ -496,55 +597,76 @@ export default function TradeDashboard() {
               No entries yet. Use the chatbot to start logging trades.
             </div>
           ) : (
-            currentTrades.map((trade) => (
-              <div key={trade.id} className={`flex justify-between items-center py-3 px-4 rounded-lg hover:opacity-90 transition-all ${
-                trade.amount >= 0 
-                  ? 'bg-green-50 border-l-4 border-green-400' 
-                  : 'bg-red-50 border-l-4 border-red-400'
-              }`}>
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    trade.amount >= 0 ? 'bg-green-400' : 'bg-red-400'
-                  }`}></div>
-                  <span className="font-bold text-lg text-gray-900">{trade.symbol}</span>
-                  <span className="text-sm text-gray-500">
-                    {new Date(trade.timestamp).toLocaleString([], { 
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    {trade.amount >= 0 ? (
-                      <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
-                    )}
-                    <span className={`font-bold text-lg ${
-                      trade.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {formatCurrency(trade.amount)}
+            currentTrades.map((trade) => {
+              const netAmount = calculateNetAmount(trade);
+              const commission = calculateCommission(trade);
+              return (
+                <div key={trade.id} className={`flex justify-between items-center py-3 px-4 rounded-lg hover:opacity-90 transition-all ${
+                  netAmount >= 0 
+                    ? 'bg-green-50 border-l-4 border-green-400' 
+                    : 'bg-red-50 border-l-4 border-red-400'
+                }`}>
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      netAmount >= 0 ? 'bg-green-400' : 'bg-red-400'
+                    }`}></div>
+                    <span className="font-bold text-lg text-gray-900">{trade.symbol}</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(trade.timestamp).toLocaleString([], { 
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    {/* Commission info */}
+                    <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                      -{formatCurrency(commission)} comm
                     </span>
                   </div>
-                  
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeleteTrade(trade.id)}
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      deleteConfirmId === trade.id
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                    }`}
-                    title={deleteConfirmId === trade.id ? 'Click again to confirm delete' : 'Delete entry'}
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col items-end space-y-1">
+                      {/* Gross Amount */}
+                      <div className="flex items-center space-x-1">
+                        <span className="text-xs text-gray-500">Gross:</span>
+                        <span className={`text-sm font-medium ${
+                          trade.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {formatCurrency(trade.amount)}
+                        </span>
+                      </div>
+                      {/* Net Amount */}
+                      <div className="flex items-center space-x-2">
+                        {netAmount >= 0 ? (
+                          <ArrowTrendingUpIcon className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
+                        )}
+                        <span className="text-xs text-gray-500">Net:</span>
+                        <span className={`font-bold text-lg ${
+                          netAmount >= 0 ? 'text-blue-600' : 'text-red-600'
+                        }`}>
+                          {formatCurrency(netAmount)}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDeleteTrade(trade.id)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        deleteConfirmId === trade.id
+                          ? 'bg-red-600 hover:bg-red-700 text-white'
+                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      }`}
+                      title={deleteConfirmId === trade.id ? 'Click again to confirm delete' : 'Delete entry'}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

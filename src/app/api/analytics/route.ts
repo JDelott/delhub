@@ -58,24 +58,27 @@ export async function GET(request: NextRequest) {
           postgresService.getTopSymbols(10) // Top 10 symbols
         ]);
 
-        // Calculate overall statistics
+        // Calculate overall statistics including commissions
         const totalDays = recentSummaries.length;
         const totalTrades = recentSummaries.reduce((sum, day) => sum + day.total_trades, 0);
         const totalAmount = recentSummaries.reduce((sum, day) => sum + parseFloat(day.total_amount.toString()), 0);
+        const totalCommissions = recentSummaries.reduce((sum, day) => sum + parseFloat((day.total_commissions || 0).toString()), 0);
+        const totalNetAmount = recentSummaries.reduce((sum, day) => sum + parseFloat((day.total_net_amount || day.total_amount).toString()), 0);
         const totalGains = recentSummaries.reduce((sum, day) => sum + parseFloat(day.total_gains.toString()), 0);
         const totalLosses = recentSummaries.reduce((sum, day) => sum + parseFloat(day.total_losses.toString()), 0);
         const avgDailyAmount = totalDays > 0 ? totalAmount / totalDays : 0;
+        const avgDailyNetAmount = totalDays > 0 ? totalNetAmount / totalDays : 0;
         const winRate = recentSummaries.length > 0 ? 
-          recentSummaries.filter(day => parseFloat(day.total_amount.toString()) > 0).length / recentSummaries.length * 100 : 0;
+          recentSummaries.filter(day => parseFloat((day.total_net_amount || day.total_amount).toString()) > 0).length / recentSummaries.length * 100 : 0;
 
-        // Get best and worst days
+        // Get best and worst days based on net amount
         const bestDay = recentSummaries.reduce((best, day) => 
-          parseFloat(day.total_amount.toString()) > parseFloat(best.total_amount.toString()) ? day : best, 
+          parseFloat((day.total_net_amount || day.total_amount).toString()) > parseFloat((best.total_net_amount || best.total_amount).toString()) ? day : best, 
           recentSummaries[0] || { total_amount: 0 }
         );
         
         const worstDay = recentSummaries.reduce((worst, day) => 
-          parseFloat(day.total_amount.toString()) < parseFloat(worst.total_amount.toString()) ? day : worst, 
+          parseFloat((day.total_net_amount || day.total_amount).toString()) < parseFloat((worst.total_net_amount || worst.total_amount).toString()) ? day : worst, 
           recentSummaries[0] || { total_amount: 0 }
         );
 
@@ -86,7 +89,10 @@ export async function GET(request: NextRequest) {
               totalDays,
               totalTrades,
               totalAmount,
+              totalCommissions,
+              totalNetAmount,
               avgDailyAmount,
+              avgDailyNetAmount,
               totalGains,
               totalLosses,
               winRate,

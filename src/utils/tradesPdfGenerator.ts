@@ -1,4 +1,4 @@
-import { TradeEntry, TradeStats } from '@/store/tradeStore';
+import { TradeEntry, TradeStats, calculateCommission, calculateNetAmount } from '@/store/tradeStore';
 
 export interface TradesPdfData {
   trades: TradeEntry[];
@@ -127,15 +127,15 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
           margin-top: 12px;
         ">
           <div style="
-            background: ${tradesData.stats.totalAmount >= 0 ? 'rgba(5, 150, 105, 0.3)' : 'rgba(234, 88, 12, 0.3)'};
-            border: 1px solid ${tradesData.stats.totalAmount >= 0 ? '#059669' : '#ea580c'};
-            color: ${tradesData.stats.totalAmount >= 0 ? '#6ee7b7' : '#fdba74'};
+            background: ${tradesData.stats.totalNetAmount >= 0 ? 'rgba(59, 130, 246, 0.3)' : 'rgba(239, 68, 68, 0.3)'};
+            border: 1px solid ${tradesData.stats.totalNetAmount >= 0 ? '#3b82f6' : '#ef4444'};
+            color: ${tradesData.stats.totalNetAmount >= 0 ? '#93c5fd' : '#fca5a5'};
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: bold;
           ">
-            ${tradesData.stats.totalAmount >= 0 ? 'PROFITABLE PERIOD' : 'LOSS PERIOD'}
+            ${tradesData.stats.totalNetAmount >= 0 ? 'NET PROFITABLE PERIOD' : 'NET LOSS PERIOD'}
           </div>
           
           <div style="
@@ -150,7 +150,7 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
       <!-- Summary Grid -->
       <div style="
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
         margin-bottom: 20px;
       ">
@@ -160,15 +160,32 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
         </div>
         <div style="background: ${tradesData.stats.totalAmount >= 0 ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid ${tradesData.stats.totalAmount >= 0 ? '#dcfce7' : '#fecaca'};">
           <div style="font-size: 22px; font-weight: bold; color: ${tradesData.stats.totalAmount >= 0 ? '#22c55e' : '#ef4444'}; margin-bottom: 4px;">${formatCurrency(tradesData.stats.totalAmount)}</div>
-          <div style="font-size: 11px; color: #64748b;">Total P&L</div>
-        </div>
-        <div style="background: #f8f4ff; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #e9e5ff;">
-          <div style="font-size: 22px; font-weight: bold; color: #8b5cf6; margin-bottom: 4px;">${formatCurrency(tradesData.stats.averageAmount)}</div>
-          <div style="font-size: 11px; color: #64748b;">Avg Per Trade</div>
+          <div style="font-size: 11px; color: #64748b;">Gross P&L</div>
         </div>
         <div style="background: #fefce8; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #fef3c7;">
           <div style="font-size: 22px; font-weight: bold; color: #f59e0b; margin-bottom: 4px;">${winRate}%</div>
           <div style="font-size: 11px; color: #64748b;">Win Rate</div>
+        </div>
+      </div>
+
+      <!-- Commission & Net P&L Grid -->
+      <div style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      ">
+        <div style="background: ${tradesData.stats.totalNetAmount >= 0 ? '#eff6ff' : '#fef2f2'}; padding: 15px; border-radius: 6px; text-align: center; border: 2px solid ${tradesData.stats.totalNetAmount >= 0 ? '#3b82f6' : '#ef4444'};">
+          <div style="font-size: 22px; font-weight: bold; color: ${tradesData.stats.totalNetAmount >= 0 ? '#3b82f6' : '#ef4444'}; margin-bottom: 4px;">${formatCurrency(tradesData.stats.totalNetAmount)}</div>
+          <div style="font-size: 11px; color: #64748b; font-weight: bold;">Net P&L (After Commissions)</div>
+        </div>
+        <div style="background: #fff7ed; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #fed7aa;">
+          <div style="font-size: 22px; font-weight: bold; color: #ea580c; margin-bottom: 4px;">${formatCurrency(tradesData.stats.totalCommissions)}</div>
+          <div style="font-size: 11px; color: #64748b;">Total Commissions</div>
+        </div>
+        <div style="background: #f8f4ff; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #e9e5ff;">
+          <div style="font-size: 22px; font-weight: bold; color: #8b5cf6; margin-bottom: 4px;">${formatCurrency(tradesData.stats.averageNetAmount)}</div>
+          <div style="font-size: 11px; color: #64748b;">Avg Net Per Trade</div>
         </div>
       </div>
 
@@ -258,14 +275,19 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
               <tr style="background: #334155; color: white;">
                 <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">#</th>
                 <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">Symbol</th>
-                <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">P&L</th>
+                <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">Gross P&L</th>
+                <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">Commission</th>
+                <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">Net P&L</th>
                 <th style="padding: 12px 8px; text-align: left; border-right: 1px solid #475569;">Date & Time</th>
                 <th style="padding: 12px 8px; text-align: left;">Notes</th>
               </tr>
             </thead>
             <tbody>
-              ${sortedTrades.map((trade, index) => `
-                <tr style="background: ${index % 2 === 0 ? '#f8fafc' : 'white'}; ${trade.amount >= 0 ? 'border-left: 4px solid #22c55e;' : 'border-left: 4px solid #ef4444;'}">
+              ${sortedTrades.map((trade, index) => {
+                const commission = calculateCommission(trade);
+                const netAmount = calculateNetAmount(trade);
+                return `
+                <tr style="background: ${index % 2 === 0 ? '#f8fafc' : 'white'}; ${netAmount >= 0 ? 'border-left: 4px solid #3b82f6;' : 'border-left: 4px solid #ef4444;'}">
                   <td style="padding: 10px 8px; border-right: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">
                     ${index + 1}
                   </td>
@@ -275,7 +297,7 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
                         width: 8px;
                         height: 8px;
                         border-radius: 50%;
-                        background: ${trade.amount >= 0 ? '#22c55e' : '#ef4444'};
+                        background: ${netAmount >= 0 ? '#3b82f6' : '#ef4444'};
                       "></div>
                       <span style="font-weight: bold; color: #0f172a; font-size: 14px;">${trade.symbol}</span>
                     </div>
@@ -288,6 +310,24 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
                     font-size: 14px;
                   ">
                     ${formatCurrency(trade.amount)}
+                  </td>
+                  <td style="
+                    padding: 10px 8px;
+                    border-right: 1px solid #e2e8f0;
+                    color: #ea580c;
+                    font-weight: bold;
+                    font-size: 12px;
+                  ">
+                    ${formatCurrency(commission)}
+                  </td>
+                  <td style="
+                    padding: 10px 8px;
+                    border-right: 1px solid #e2e8f0;
+                    font-weight: bold;
+                    color: ${netAmount >= 0 ? '#3b82f6' : '#ef4444'};
+                    font-size: 14px;
+                  ">
+                    ${formatCurrency(netAmount)}
                   </td>
                   <td style="padding: 10px 8px; border-right: 1px solid #e2e8f0; color: #475569;">
                     <div>${formatDateOnly(new Date(trade.timestamp))}</div>
@@ -303,7 +343,8 @@ function createTradesPDFHTML(tradesData: TradesPdfData): HTMLElement {
                     ${trade.notes || 'No notes'}
                   </td>
                 </tr>
-              `).join('')}
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
