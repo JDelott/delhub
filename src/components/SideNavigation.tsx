@@ -90,7 +90,7 @@ export default function SideNavigation({ className = '' }: SideNavigationProps) 
                 Del<span className="text-blue-600">Hub</span>
                 <div className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full group-hover:w-12 transition-all duration-300"></div>
               </h1>
-              <p className="text-sm text-gray-500 font-medium mt-1 group-hover:text-gray-700 transition-colors">AI Assistant</p>
+              <p className="text-sm text-gray-500 font-medium mt-1 group-hover:text-gray-700 transition-colors">Options Trading</p>
             </Link>
             
             {/* Hamburger Button */}
