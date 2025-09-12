@@ -117,58 +117,47 @@ export default function ChatAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
-        <div className="max-w-3xl mx-auto flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
-            <SparklesIcon className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">
-              Del<span className="text-blue-600">Hub</span> Assistant
-            </h1>
-            <p className="text-xs text-gray-500">AI-powered trading analytics</p>
-          </div>
+    <div className="flex flex-col h-screen bg-white relative">
+      {/* Subtle branding in corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <div className="text-xs text-gray-400 font-medium tracking-wide">
+          DelHub AI Assistant
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <div className="flex-1 overflow-y-auto pt-12">
+        <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         {messages.map((message, index) => (
-          <div key={index} className="group">
-            <div className={`flex items-start gap-4 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+          <div key={index} className={`group ${message.role === 'user' ? 'bg-gray-50 -mx-6 px-6 py-6' : ''}`}>
+            <div className="flex items-start gap-6">
               {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                 message.role === 'user' 
                   ? 'bg-blue-600' 
                   : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700'
               }`}>
                 {message.role === 'user' ? (
-                  <span className="text-white font-semibold text-xs">U</span>
+                  <span className="text-white font-semibold text-sm">U</span>
                 ) : (
-                  <SparklesIcon className="h-4 w-4 text-white" />
+                  <SparklesIcon className="h-5 w-5 text-white" />
                 )}
               </div>
               
               {/* Message Content */}
               <div className="flex-1 min-w-0">
-                <div className={`${message.role === 'user' ? 'text-right' : ''}`}>
-                  <div className={`inline-block max-w-full p-3 rounded-lg ${
-                    message.role === 'user'
-                      ? 'bg-blue-600 text-white ml-auto'
-                      : 'bg-white text-gray-900 border border-gray-200'
-                  }`}>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {message.role === 'user' ? 'You' : 'DelHub Assistant'}
+                  </span>
+                </div>
+                <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed">
+                  <div className="whitespace-pre-wrap">
+                    {message.content}
                   </div>
-                  <div className={`text-xs text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${
-                    message.role === 'user' ? 'text-right' : 'text-left'
-                  }`}>
-                    {formatTimestamp(message.timestamp)}
-                  </div>
+                </div>
+                <div className="text-xs text-gray-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {formatTimestamp(message.timestamp)}
                 </div>
               </div>
             </div>
@@ -178,20 +167,23 @@ export default function ChatAssistant() {
         {/* Loading indicator */}
         {isLoading && (
           <div className="group">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center flex-shrink-0">
-                <SparklesIcon className="h-4 w-4 text-white" />
+            <div className="flex items-start gap-6">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center flex-shrink-0">
+                <SparklesIcon className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="bg-white p-3 rounded-lg border border-gray-200 inline-block">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></div>
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                    <span className="text-xs text-gray-500">Thinking...</span>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    DelHub Assistant
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
+                  <span className="text-xs text-gray-500">Thinking...</span>
                 </div>
               </div>
             </div>
@@ -204,13 +196,13 @@ export default function ChatAssistant() {
 
 
       {/* Input */}
-      <div className="bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 pb-6 relative">
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto px-6 pb-6 relative">
           {/* Input Container */}
-          <div className="relative bg-gray-50 rounded-3xl border border-gray-200 shadow-sm">
+          <div className="relative bg-white rounded-3xl border border-gray-200 shadow-sm">
             {/* Quick Actions Dropdown - Overlays above */}
             {showQuickActions && (
-              <div className="absolute bottom-full mb-2 left-0 right-0 p-3 bg-gray-50 rounded-xl border border-gray-200 shadow-lg z-10">
+              <div className="absolute bottom-full mb-2 left-0 right-0 p-3 bg-white rounded-xl border border-gray-200 shadow-lg z-10">
                 <div className="grid grid-cols-1 gap-1">
                   {suggestedPrompts.map((prompt, index) => (
                     <button
