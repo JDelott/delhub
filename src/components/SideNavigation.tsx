@@ -41,6 +41,15 @@ export default function SideNavigation({ className = '' }: SideNavigationProps) 
         </svg>
       ),
     },
+    {
+      name: 'AI Assistant',
+      href: '/chat',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -68,21 +77,21 @@ export default function SideNavigation({ className = '' }: SideNavigationProps) 
             </button>
             
             {/* DH Logo - only when collapsed */}
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105">
+            <Link href="/chat" className="w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105">
               <span className="text-white font-bold text-sm tracking-tight">DH</span>
-            </div>
+            </Link>
           </div>
         ) : (
           // Expanded Header Layout
           <div className="flex items-center justify-between">
             {/* Title only when expanded */}
-            <div className="relative">
-              <h1 className="text-xl font-bold text-gray-900">
+            <Link href="/chat" className="relative group">
+              <h1 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors cursor-pointer">
                 Del<span className="text-blue-600">Hub</span>
-                <div className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
+                <div className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full group-hover:w-12 transition-all duration-300"></div>
               </h1>
-              <p className="text-sm text-gray-500 font-medium mt-1">Options Trading</p>
-            </div>
+              <p className="text-sm text-gray-500 font-medium mt-1 group-hover:text-gray-700 transition-colors">AI Assistant</p>
+            </Link>
             
             {/* Hamburger Button */}
             <button
