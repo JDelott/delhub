@@ -217,34 +217,36 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       {state.error && <ErrorDisplay error={state.error} />}
 
       {/* Results */}
-      <div className="p-4 sm:p-6 bg-gray-50">
-        {state.viewMode === 'screener' && state.screenerResults && (
-          <ScreenerResults
-            screenerResults={state.screenerResults}
-            optionType={state.optionType}
-            selectedOptions={state.selectedOptions}
-            onToggleOptionSelection={batchTrading.toggleOptionSelection}
-            onOpenTradeModal={handleOpenTradeModalForScreener}
-            onDownloadPDF={downloadPDFReport}
-          />
-        )}
+      <div className="flex-1 bg-gray-50">
+        <div className="p-4 sm:p-6">
+          {state.viewMode === 'screener' && state.screenerResults && (
+            <ScreenerResults
+              screenerResults={state.screenerResults}
+              optionType={state.optionType}
+              selectedOptions={state.selectedOptions}
+              onToggleOptionSelection={batchTrading.toggleOptionSelection}
+              onOpenTradeModal={handleOpenTradeModalForScreener}
+              onDownloadPDF={downloadPDFReport}
+            />
+          )}
 
-        {state.viewMode === 'single' && state.optionsData && (
-          <SingleStockResults
-            optionsData={state.optionsData}
-            onOpenTradeModal={handleOpenTradeModalForSingle}
-          />
-        )}
+          {state.viewMode === 'single' && state.optionsData && (
+            <SingleStockResults
+              optionsData={state.optionsData}
+              onOpenTradeModal={handleOpenTradeModalForSingle}
+            />
+          )}
 
-        {/* Loading State */}
-        {state.loading && (
-          <LoadingState viewMode={state.viewMode} />
-        )}
+          {/* Loading State */}
+          {state.loading && (
+            <LoadingState viewMode={state.viewMode} />
+          )}
 
-        {/* Empty State */}
-        {!state.loading && !state.optionsData && !state.screenerResults && !state.error && (
-          <EmptyState viewMode={state.viewMode} />
-        )}
+          {/* Empty State */}
+          {!state.loading && !state.optionsData && !state.screenerResults && !state.error && (
+            <EmptyState viewMode={state.viewMode} />
+          )}
+        </div>
       </div>
 
       {/* Options Trading Modal */}

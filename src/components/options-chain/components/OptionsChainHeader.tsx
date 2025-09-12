@@ -24,31 +24,28 @@ export default function OptionsChainHeader({
   return (
     <div className="border-b border-gray-200 bg-white px-6 pt-8 pb-4">
       <div className="flex items-center justify-between">
-        {/* Left: Title and Status */}
+        {/* Left: Title */}
         <div className="flex items-center gap-8">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 mb-1">
-              Options Screener
-            </h1>
-            <div className="flex items-center gap-3 text-sm">
-              <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${
-                optionType === 'puts' 
-                  ? 'bg-orange-50 text-orange-600 border border-orange-100' 
-                  : 'bg-green-50 text-green-600 border border-green-100'
-              }`}>
-                {optionType === 'puts' ? 'BEARISH STRATEGY' : 'BULLISH STRATEGY'}
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600 font-medium">
-                {selectedSpreadsCount} spread{selectedSpreadsCount !== 1 ? 's' : ''}
-              </span>
-              {selectedOptionsCount > 0 && (
-                <>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-blue-600 font-medium">{selectedOptionsCount} selected</span>
-                </>
-              )}
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Options Screener
+                </h1>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  Discover and analyze options across multiple stocks
+                </p>
+              </div>
             </div>
+            {/* Only show selected count if there are selections */}
+            {selectedOptionsCount > 0 && (
+              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                <span className="text-blue-600 text-sm font-medium">
+                  {selectedOptionsCount} selected
+                </span>
+              </div>
+            )}
           </div>
         </div>
         
