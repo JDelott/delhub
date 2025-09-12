@@ -28,8 +28,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use provided date or default to today
-    const tradeDate = date || new Date().toISOString().split('T')[0];
+    // Use provided date or default to today in Pacific timezone
+    const tradeDate = date || new Date().toLocaleDateString('en-CA', { 
+      timeZone: 'America/Los_Angeles' 
+    });
 
     // Calculate summary statistics including commissions
     const totalTrades = trades.length;
