@@ -36,7 +36,10 @@ interface MonthlyPerformance {
   trading_days: number;
   total_trades: number;
   total_amount: number;
+  total_net_amount: number;
+  total_commissions: number;
   avg_daily_amount: number;
+  avg_daily_net_amount: number;
   total_gains: number;
   total_losses: number;
   total_wins: number;
@@ -81,7 +84,7 @@ export default function AnalyticsDashboard() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  const [datePickerMode, setDatePickerMode] = useState<'day' | 'week' | 'range'>('day');
+  const [datePickerMode, setDatePickerMode] = useState<'day' | 'range'>('day');
   const { downloadPDFReport, isExporting } = useAnalyticsExport(data);
 
   const formatCurrency = (amount: number) => {
@@ -93,7 +96,12 @@ export default function AnalyticsDashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString + 'T12:00:00').toLocaleDateString('en-US', {
+    // Handle both ISO dates (2025-09-11T07:00:00.000Z) and simple dates (2025-09-11)
+    const date = dateString.includes('T') 
+      ? new Date(dateString) 
+      : new Date(dateString + 'T12:00:00');
+    
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -102,7 +110,12 @@ export default function AnalyticsDashboard() {
   };
 
   const formatMonth = (monthString: string) => {
-    return new Date(monthString + 'T12:00:00').toLocaleDateString('en-US', {
+    // Handle both ISO dates and simple dates
+    const date = monthString.includes('T') 
+      ? new Date(monthString) 
+      : new Date(monthString + 'T12:00:00');
+    
+    return date.toLocaleDateString('en-US', {
       month: 'long',
       year: 'numeric',
       timeZone: 'America/Los_Angeles'
@@ -158,15 +171,10 @@ export default function AnalyticsDashboard() {
     return sunday.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
   };
 
-  const handleDateSelection = (mode: 'day' | 'week' | 'range', date?: string) => {
+  const handleDateSelection = (mode: 'day' | 'range', date?: string) => {
     if (mode === 'day' && date) {
       setCustomStartDate(date);
       setCustomEndDate(date);
-      setSelectedTimeframe('custom');
-      setShowDatePicker(false);
-    } else if (mode === 'week' && date) {
-      setCustomStartDate(getWeekStart(date));
-      setCustomEndDate(getWeekEnd(date));
       setSelectedTimeframe('custom');
       setShowDatePicker(false);
     }
@@ -282,77 +290,70 @@ export default function AnalyticsDashboard() {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => setDatePickerMode('day')}
-                      className={`px-3 py-1 text-xs rounded ${
+                      className={`flex items-center px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
                         datePickerMode === 'day' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-blue-600 text-white shadow-sm' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
+                      <CalendarIcon className="h-4 w-4 mr-2" />
                       Single Day
                     </button>
                     <button
-                      onClick={() => setDatePickerMode('week')}
-                      className={`px-3 py-1 text-xs rounded ${
-                        datePickerMode === 'week' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Week
-                    </button>
-                    <button
                       onClick={() => setDatePickerMode('range')}
-                      className={`px-3 py-1 text-xs rounded ${
+                      className={`flex items-center px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
                         datePickerMode === 'range' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-blue-600 text-white shadow-sm' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
+                      <CalendarDaysIcon className="h-4 w-4 mr-2" />
                       Custom Range
                     </button>
                   </div>
 
                   {/* Quick Date Options */}
-                  <div className="space-y-2">
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Quick Select</p>
                     <button
                       onClick={() => handleDateSelection('day', getTodayDate())}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                      className="w-full flex items-center text-left px-3 py-2 text-sm hover:bg-white hover:shadow-sm rounded-lg transition-colors"
                     >
-                      📅 Today ({formatDate(getTodayDate())})
-                    </button>
-                    <button
-                      onClick={() => handleDateSelection('week', getTodayDate())}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
-                    >
-                      📊 This Week ({formatDate(getWeekStart(getTodayDate()))} - {formatDate(getWeekEnd(getTodayDate()))})
+                      <CalendarIcon className="h-4 w-4 text-blue-500 mr-3" />
+                      <div>
+                        <div className="font-medium text-gray-900">Today</div>
+                        <div className="text-xs text-gray-500">{formatDate(getTodayDate())}</div>
+                      </div>
                     </button>
                   </div>
 
                   {/* Date Inputs */}
                   {datePickerMode === 'range' && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input
-                          type="date"
-                          value={customStartDate}
-                          onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                          <input
+                            type="date"
+                            value={customStartDate}
+                            onChange={(e) => setCustomStartDate(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                          <input
+                            type="date"
+                            value={customEndDate}
+                            onChange={(e) => setCustomEndDate(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input
-                          type="date"
-                          value={customEndDate}
-                          onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-2">
+                      <div className="flex justify-end space-x-3 pt-2 border-t border-gray-200">
                         <button
                           onClick={() => setShowDatePicker(false)}
-                          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                          className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
                         >
                           Cancel
                         </button>
@@ -364,21 +365,21 @@ export default function AnalyticsDashboard() {
                             }
                           }}
                           disabled={!customStartDate || !customEndDate}
-                          className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300"
+                          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors"
                         >
-                          Apply
+                          Apply Range
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {(datePickerMode === 'day' || datePickerMode === 'week') && (
+                  {datePickerMode === 'day' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
                       <input
                         type="date"
-                        onChange={(e) => handleDateSelection(datePickerMode, e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) => handleDateSelection('day', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   )}
@@ -685,24 +686,41 @@ export default function AnalyticsDashboard() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Monthly Performance</h3>
         <div className="space-y-4">
-          {data.monthlyPerformance.slice(0, 6).map((month) => (
-            <div key={month.month} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-              <div>
-                <span className="font-semibold text-gray-900">{formatMonth(month.month)}</span>
-                <p className="text-sm text-gray-500">
-                  {month.trading_days} days • {month.total_trades.toLocaleString()} trades
-                </p>
+          {data.monthlyPerformance.slice(0, 6).map((month) => {
+            const netAmount = month.total_net_amount || month.total_amount;
+            const commissions = month.total_commissions || 0;
+            return (
+              <div key={month.month} className={`flex items-center justify-between py-3 px-4 rounded-lg ${
+                netAmount >= 0 ? 'bg-blue-50 border-l-4 border-blue-400' : 'bg-red-50 border-l-4 border-red-400'
+              }`}>
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${netAmount >= 0 ? 'bg-blue-400' : 'bg-red-400'}`}></div>
+                  <div>
+                    <span className="font-medium text-gray-900">{formatMonth(month.month)}</span>
+                    <p className="text-sm text-gray-500">
+                      {month.trading_days} days • {month.total_trades.toLocaleString()} trades • {formatCurrency(commissions)} commissions
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex flex-col items-end space-y-1">
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">Gross: </span>
+                      <span className={`text-sm font-medium ${month.total_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(month.total_amount)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">Net: </span>
+                      <span className={`font-bold text-lg ${netAmount >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                        {formatCurrency(netAmount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <span className={`font-bold text-lg ${month.total_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(month.total_amount)}
-                </span>
-                <p className="text-sm text-gray-500">
-                  Avg: {formatCurrency(month.avg_daily_amount)}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

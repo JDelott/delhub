@@ -8,6 +8,9 @@ interface AnalyticsData {
     avgDailyAmount: number;
     totalGains: number;
     totalLosses: number;
+    totalCommissions?: number;
+    totalNetAmount?: number;
+    avgDailyNetAmount?: number;
     winRate: number;
     bestDay: any;
     worstDay: any;
