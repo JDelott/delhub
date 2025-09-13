@@ -5,10 +5,10 @@ import { useTradeStore, calculateCommission, calculateNetAmount } from '@/store/
 import { useTradesExport } from '@/hooks/useTradesExport';
 import { useDailySummary } from '@/hooks/useDailySummary';
 import DailySummaryPreview from '@/components/DailySummaryPreview';
-import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon as ChevronRightIconSolid, CloudArrowUpIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon as ChevronRightIconSolid, CloudArrowUpIcon, CheckCircleIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function TradeDashboard() {
-  const { trades, getTradeStats, clearAllTrades, deleteTrade, addTrade } = useTradeStore();
+  const { trades, getTradeStats, clearAllTrades, deleteTrade, addTrade, updateTrade } = useTradeStore();
   const stats = getTradeStats();
   const { downloadPDFReport } = useTradesExport({ trades, stats });
   const { 
@@ -30,6 +30,14 @@ export default function TradeDashboard() {
   const [tradesPerPage] = useState(10);
   const [logMessage, setLogMessage] = useState<string | null>(null);
   const [showSummaryPreview, setShowSummaryPreview] = useState(false);
+  const [editingTradeId, setEditingTradeId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    symbol: '',
+    amount: '',
+    commissionRate: '',
+    contractCount: '',
+    notes: ''
+  });
 
   // Fix hydration mismatch by ensuring client-side rendering
   useEffect(() => {
@@ -168,6 +176,55 @@ export default function TradeDashboard() {
     }
     
     setTimeout(() => setLogMessage(null), 5000);
+  };
+
+  const handleEditTrade = (trade: any) => {
+    setEditingTradeId(trade.id);
+    setEditFormData({
+      symbol: trade.symbol,
+      amount: trade.amount.toString(),
+      commissionRate: (trade.commissionRate ?? 0.16).toString(),
+      contractCount: (trade.contractCount ?? 2).toString(),
+      notes: trade.notes || ''
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingTradeId) return;
+    
+    const amount = parseFloat(editFormData.amount);
+    const commissionRate = parseFloat(editFormData.commissionRate);
+    const contractCount = parseInt(editFormData.contractCount);
+    
+    if (isNaN(amount) || isNaN(commissionRate) || isNaN(contractCount)) return;
+    
+    updateTrade(editingTradeId, {
+      symbol: editFormData.symbol.trim().toUpperCase(),
+      amount: amount,
+      commissionRate: commissionRate,
+      contractCount: contractCount,
+      notes: editFormData.notes.trim() || undefined
+    });
+    
+    setEditingTradeId(null);
+    setEditFormData({
+      symbol: '',
+      amount: '',
+      commissionRate: '',
+      contractCount: '',
+      notes: ''
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTradeId(null);
+    setEditFormData({
+      symbol: '',
+      amount: '',
+      commissionRate: '',
+      contractCount: '',
+      notes: ''
+    });
   };
 
 
@@ -600,6 +657,99 @@ export default function TradeDashboard() {
             currentTrades.map((trade) => {
               const netAmount = calculateNetAmount(trade);
               const commission = calculateCommission(trade);
+              const isEditing = editingTradeId === trade.id;
+              
+              if (isEditing) {
+                return (
+                  <div key={trade.id} className="bg-blue-50 border-l-4 border-blue-400 py-4 px-4 rounded-lg">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Symbol</label>
+                        <input
+                          type="text"
+                          value={editFormData.symbol}
+                          onChange={(e) => setEditFormData({ ...editFormData, symbol: e.target.value })}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Amount ($)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editFormData.amount}
+                          onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Commission Rate</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editFormData.commissionRate}
+                          onChange={(e) => setEditFormData({ ...editFormData, commissionRate: e.target.value })}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Contracts</label>
+                        <input
+                          type="number"
+                          value={editFormData.contractCount}
+                          onChange={(e) => setEditFormData({ ...editFormData, contractCount: e.target.value })}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <input
+                        type="text"
+                        value={editFormData.notes}
+                        onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Optional notes"
+                      />
+                    </div>
+                    {/* Preview calculations */}
+                    <div className="bg-blue-100 rounded p-2 mb-3 text-xs">
+                      <div className="flex justify-between">
+                        <span>Commission:</span>
+                        <span className="text-orange-600 font-medium">
+                          -{formatCurrency((parseFloat(editFormData.commissionRate) || 0) * (parseInt(editFormData.contractCount) || 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <span>Net Amount:</span>
+                        <span className={`${
+                          ((parseFloat(editFormData.amount) || 0) - (parseFloat(editFormData.commissionRate) || 0) * (parseInt(editFormData.contractCount) || 0)) >= 0 
+                            ? 'text-blue-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {formatCurrency((parseFloat(editFormData.amount) || 0) - (parseFloat(editFormData.commissionRate) || 0) * (parseInt(editFormData.contractCount) || 0))}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex items-center px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+                      >
+                        <XMarkIcon className="h-3 w-3 mr-1" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveEdit}
+                        className="flex items-center px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                      >
+                        <CheckIcon className="h-3 w-3 mr-1" />
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+              
               return (
                 <div key={trade.id} className={`flex justify-between items-center py-3 px-4 rounded-lg hover:opacity-90 transition-all ${
                   netAmount >= 0 
@@ -651,18 +801,30 @@ export default function TradeDashboard() {
                       </div>
                     </div>
                     
-                    {/* Delete Button */}
-                    <button
-                      onClick={() => handleDeleteTrade(trade.id)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        deleteConfirmId === trade.id
-                          ? 'bg-red-600 hover:bg-red-700 text-white'
-                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                      }`}
-                      title={deleteConfirmId === trade.id ? 'Click again to confirm delete' : 'Delete entry'}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-1">
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => handleEditTrade(trade)}
+                        className="p-1.5 rounded-lg transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        title="Edit entry"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => handleDeleteTrade(trade.id)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          deleteConfirmId === trade.id
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                        }`}
+                        title={deleteConfirmId === trade.id ? 'Click again to confirm delete' : 'Delete entry'}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

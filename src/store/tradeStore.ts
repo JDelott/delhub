@@ -38,6 +38,7 @@ export const calculateNetAmount = (trade: TradeEntry): number => {
 interface TradeStore {
   trades: TradeEntry[];
   addTrade: (trade: Omit<TradeEntry, 'id' | 'timestamp'>) => string;
+  updateTrade: (id: string, updatedData: Partial<Omit<TradeEntry, 'id' | 'timestamp'>>) => void;
   deleteTrade: (id: string) => void;
   getTradeStats: () => TradeStats;
   getTradesBySymbol: (symbol: string) => TradeEntry[];
@@ -62,6 +63,16 @@ export const useTradeStore = create<TradeStore>()(
         }));
 
         return id;
+      },
+
+      updateTrade: (id, updatedData) => {
+        set((state) => ({
+          trades: state.trades.map((trade) =>
+            trade.id === id
+              ? { ...trade, ...updatedData }
+              : trade
+          ),
+        }));
       },
 
       deleteTrade: (id) => {
