@@ -51,6 +51,10 @@ export const useOptionsChainState = () => {
     setError: store.setError,
     sectorFilter: store.sectorFilter,
     setSectorFilter: store.setSectorFilter,
+    minOptionVolume: store.minOptionVolume,
+    setMinOptionVolume: store.setMinOptionVolume,
+    minOpenInterest: store.minOpenInterest,
+    setMinOpenInterest: store.setMinOpenInterest,
     
     // Trading states
     tradeModal: store.tradeModal,

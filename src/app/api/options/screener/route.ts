@@ -370,16 +370,28 @@ export async function POST(request: NextRequest) {
     const stocksFilteredByVolume = priceFilteredResults.length - volumeFilteredResults.length;
     const totalStocksFiltered = stocksFilteredByPrice + stocksFilteredByVolume;
     
-    // Sort by total options found based on type
+    // Sort by highest individual option volume for better scalping opportunities
     const topPerformers = successfulResults
       .sort((a, b) => {
-        const aTotal = optionType === 'puts' ? a.totalPutOptionsFound : 
-                      optionType === 'calls' ? a.totalCallOptionsFound :
-                      a.totalPutOptionsFound + a.totalCallOptionsFound;
-        const bTotal = optionType === 'puts' ? b.totalPutOptionsFound : 
-                      optionType === 'calls' ? b.totalCallOptionsFound :
-                      b.totalPutOptionsFound + b.totalCallOptionsFound;
-        return bTotal - aTotal;
+        // Get highest volume option for each stock based on option type
+        const getHighestVolume = (result: StockOptionsResult) => {
+          if (optionType === 'puts') {
+            return result.bestPutOptions.length > 0 ? Math.max(...result.bestPutOptions.map(opt => opt.volume)) : 0;
+          } else if (optionType === 'calls') {
+            return result.bestCallOptions.length > 0 ? Math.max(...result.bestCallOptions.map(opt => opt.volume)) : 0;
+          } else {
+            // For 'both', get the highest volume across all options
+            const putVolumes = result.bestPutOptions.map(opt => opt.volume);
+            const callVolumes = result.bestCallOptions.map(opt => opt.volume);
+            const allVolumes = [...putVolumes, ...callVolumes];
+            return allVolumes.length > 0 ? Math.max(...allVolumes) : 0;
+          }
+        };
+        
+        const aHighestVolume = getHighestVolume(a);
+        const bHighestVolume = getHighestVolume(b);
+        
+        return bHighestVolume - aHighestVolume; // Sort highest volume first
       })
       .slice(0, maxResults);
     

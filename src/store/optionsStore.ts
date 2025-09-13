@@ -44,6 +44,8 @@ export interface OptionsScreenerState {
   minBid: number;
   strikeRange: 'tight' | 'moderate' | 'wide' | 'extended';
   sectorFilter: string;
+  minOptionVolume: number;
+  minOpenInterest: number;
   
   // Trading states (these don't need persistence)
   tradeModal: TradeModalState;
@@ -90,6 +92,8 @@ interface OptionsStore extends OptionsScreenerState {
   setMinBid: (minBid: number) => void;
   setStrikeRange: (strikeRange: 'tight' | 'moderate' | 'wide' | 'extended') => void;
   setSectorFilter: (sectorFilter: string) => void;
+  setMinOptionVolume: (minOptionVolume: number) => void;
+  setMinOpenInterest: (minOpenInterest: number) => void;
   
   // Actions for trading states (non-persistent)
   setTradeModal: (tradeModal: TradeModalState) => void;
@@ -143,6 +147,8 @@ export const useOptionsStore = create<OptionsStore>()(
       minBid: 0.05,
       strikeRange: 'moderate',
       sectorFilter: 'all',
+      minOptionVolume: 0,
+      minOpenInterest: 0,
       
       // Trading states (non-persistent defaults)
       tradeModal: {
@@ -192,6 +198,8 @@ export const useOptionsStore = create<OptionsStore>()(
       setMinBid: (minBid: number) => set({ minBid }),
       setStrikeRange: (strikeRange: 'tight' | 'moderate' | 'wide' | 'extended') => set({ strikeRange }),
       setSectorFilter: (sectorFilter: string) => set({ sectorFilter }),
+      setMinOptionVolume: (minOptionVolume: number) => set({ minOptionVolume }),
+      setMinOpenInterest: (minOpenInterest: number) => set({ minOpenInterest }),
       
       // Actions for trading states (non-persistent)
       setTradeModal: (tradeModal: TradeModalState) => set({ tradeModal }),
@@ -224,7 +232,9 @@ export const useOptionsStore = create<OptionsStore>()(
         selectedSpreads: [0.15],
         minBid: 0.05,
         strikeRange: 'moderate',
-        sectorFilter: 'all'
+        sectorFilter: 'all',
+        minOptionVolume: 0,
+        minOpenInterest: 0
       }),
     }),
     {
@@ -253,6 +263,8 @@ export const useOptionsStore = create<OptionsStore>()(
         minBid: state.minBid,
         strikeRange: state.strikeRange,
         sectorFilter: state.sectorFilter,
+        minOptionVolume: state.minOptionVolume,
+        minOpenInterest: state.minOpenInterest,
       }),
       // Merge function to handle hydration issues
       merge: (persistedState: unknown, currentState: OptionsScreenerState) => {

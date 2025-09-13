@@ -22,6 +22,10 @@ interface ScreenerControlsProps {
   setMinBid: (bid: number) => void;
   strikeRange: 'tight' | 'moderate' | 'wide' | 'extended';
   setStrikeRange: (range: 'tight' | 'moderate' | 'wide' | 'extended') => void;
+  minOptionVolume: number;
+  setMinOptionVolume: (volume: number) => void;
+  minOpenInterest: number;
+  setMinOpenInterest: (openInterest: number) => void;
   loading: boolean;
   onRunScreener: (spreads?: number[]) => void;
   onClearFilters?: () => void;
@@ -46,6 +50,10 @@ export default function ScreenerControls({
   setMinBid,
   strikeRange,
   setStrikeRange,
+  minOptionVolume,
+  setMinOptionVolume,
+  minOpenInterest,
+  setMinOpenInterest,
   loading,
   onRunScreener,
   onClearFilters
@@ -356,6 +364,42 @@ export default function ScreenerControls({
             value={minBid}
             onChange={(e) => setMinBid(Number(e.target.value))}
             className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
+            disabled={loading}
+          />
+        </div>
+
+        {/* Min Option Volume */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            Min Option Volume
+          </label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={minOptionVolume === 0 ? '' : minOptionVolume}
+            onChange={(e) => setMinOptionVolume(e.target.value === '' ? 0 : Number(e.target.value))}
+            placeholder="5"
+            className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
+            disabled={loading}
+          />
+        </div>
+
+        {/* Min Open Interest */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
+            <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+            Min Open Interest
+          </label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={minOpenInterest === 0 ? '' : minOpenInterest}
+            onChange={(e) => setMinOpenInterest(e.target.value === '' ? 0 : Number(e.target.value))}
+            placeholder="25"
+            className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
             disabled={loading}
           />
         </div>

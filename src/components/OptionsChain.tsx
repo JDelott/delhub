@@ -191,6 +191,10 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
             setMinBid={state.setMinBid}
             strikeRange={state.strikeRange}
             setStrikeRange={state.setStrikeRange}
+            minOptionVolume={state.minOptionVolume}
+            setMinOptionVolume={state.setMinOptionVolume}
+            minOpenInterest={state.minOpenInterest}
+            setMinOpenInterest={state.setMinOpenInterest}
             loading={state.loading}
             onRunScreener={handleRunScreener}
             onClearFilters={() => {

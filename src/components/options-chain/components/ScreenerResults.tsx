@@ -182,7 +182,7 @@ export default function ScreenerResults({
                       <th className="text-left py-3 font-semibold">Bid</th>
                       <th className="text-left py-3 font-semibold">Ask</th>
                       <th className="text-left py-3 font-semibold">Spread</th>
-                      <th className="text-left py-3 font-semibold">Volume</th>
+                      <th className="text-left py-3 font-semibold cursor-help" title="Total contracts traded for this option today">Volume</th>
                       <th className="text-left py-3 font-semibold">Expiration</th>
                       <th className="text-center py-3 font-semibold">Actions</th>
                     </tr>
