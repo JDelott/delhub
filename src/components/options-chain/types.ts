@@ -64,6 +64,8 @@ export interface OptionsScreenerRequest {
   minAverageVolume?: number;
   optionType?: 'puts' | 'calls' | 'both';
   strikeRange?: 'tight' | 'moderate' | 'wide' | 'extended';
+  minOptionVolume?: number;
+  minOpenInterest?: number;
 }
 
 export interface TradeModalState {

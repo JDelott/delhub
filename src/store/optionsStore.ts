@@ -147,8 +147,8 @@ export const useOptionsStore = create<OptionsStore>()(
       minBid: 0.05,
       strikeRange: 'moderate',
       sectorFilter: 'all',
-      minOptionVolume: 0,
-      minOpenInterest: 0,
+      minOptionVolume: 5,
+      minOpenInterest: 25,
       
       // Trading states (non-persistent defaults)
       tradeModal: {
@@ -233,8 +233,8 @@ export const useOptionsStore = create<OptionsStore>()(
         minBid: 0.05,
         strikeRange: 'moderate',
         sectorFilter: 'all',
-        minOptionVolume: 0,
-        minOpenInterest: 0
+        minOptionVolume: 5,
+        minOpenInterest: 25
       }),
     }),
     {
