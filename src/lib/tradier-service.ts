@@ -589,7 +589,9 @@ class TradierService {
     exactSpreads: number[] = [0.15], // Changed to array
     minBid: number = 0.05,
     currentStockPrice?: number,
-    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate'
+    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate',
+    minVolume: number = 0,
+    minOpenInterest: number = 0
   ): Promise<FilteredPutOption[]> {
     const options = await this.getOptionsChain(symbol, expiration);
     
@@ -643,8 +645,10 @@ class TradierService {
         const strikeMatch = option.strike <= thresholdBelow;
         
         const validData = option.bid > 0 && option.ask > 0;
+        const volumeMatch = option.volume >= minVolume;
+        const openInterestMatch = option.openInterest >= minOpenInterest;
         
-        return spreadMatch && bidMatch && strikeMatch && validData;
+        return spreadMatch && bidMatch && strikeMatch && validData && volumeMatch && openInterestMatch;
       })
       .sort((a: FilteredPutOption, b: FilteredPutOption) => b.volume - a.volume);
 
@@ -658,7 +662,9 @@ class TradierService {
     exactSpreads: number[] = [0.15], // Changed to array
     minBid: number = 0.05,
     currentStockPrice?: number,
-    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate'
+    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate',
+    minVolume: number = 0,
+    minOpenInterest: number = 0
   ): Promise<FilteredCallOption[]> {
     const options = await this.getOptionsChain(symbol, expiration);
     
@@ -712,8 +718,10 @@ class TradierService {
         const strikeMatch = option.strike >= thresholdAbove;
         
         const validData = option.bid > 0 && option.ask > 0;
+        const volumeMatch = option.volume >= minVolume;
+        const openInterestMatch = option.openInterest >= minOpenInterest;
         
-        return spreadMatch && bidMatch && strikeMatch && validData;
+        return spreadMatch && bidMatch && strikeMatch && validData && volumeMatch && openInterestMatch;
       })
       .sort((a: FilteredCallOption, b: FilteredCallOption) => b.volume - a.volume);
 

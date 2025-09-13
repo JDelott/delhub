@@ -212,6 +212,8 @@ export interface OptionsScreenerRequest {
   minAverageVolume?: number; // New: minimum average volume requirement
   optionType?: 'puts' | 'calls' | 'both'; // New: option type selection
   strikeRange?: 'tight' | 'moderate' | 'wide' | 'extended'; // New: predefined ranges
+  minOptionVolume?: number; // New: minimum option volume filter
+  minOpenInterest?: number; // New: minimum open interest filter
 }
 
 export interface StockOptionsResult {
@@ -260,13 +262,15 @@ export async function POST(request: NextRequest) {
       symbols,
       exactSpreads = [0.15], // Changed to array with default
       minBid = 0.05,
-      maxResults = 25,
+      maxResults = 75,
       expirationFilter = 'all',
       priceFilter = 'under50',
       maxStockPrice,
       minAverageVolume = 1000000,
       optionType = 'puts',
-      strikeRange = 'moderate'
+      strikeRange = 'moderate',
+      minOptionVolume = 0,
+      minOpenInterest = 0
     }: OptionsScreenerRequest = await request.json();
 
     // Determine price cap and symbol list
@@ -329,7 +333,7 @@ export async function POST(request: NextRequest) {
       console.log(`📈 Processing batch ${batchNumber}/${totalBatches} (${batch.length} stocks): ${batch.join(', ')}`);
       
       const batchPromises = batch.map(symbol => 
-        screenStockWithService(tradierService, symbol, exactSpreads, minBid, expirationFilter, priceLimit, minAverageVolume, optionType, strikeRange)
+        screenStockWithService(tradierService, symbol, exactSpreads, minBid, expirationFilter, priceLimit, minAverageVolume, optionType, strikeRange, minOptionVolume, minOpenInterest)
       );
       
       const batchResults = await Promise.all(batchPromises);
@@ -359,11 +363,11 @@ export async function POST(request: NextRequest) {
     const priceFilteredResults = results.filter(r => r.priceFilterPassed !== false);
     const volumeFilteredResults = priceFilteredResults.filter(r => r.volumeFilterPassed !== false);
     
-    // Filter successful results based on option type
+    // Filter successful results based on option type AND minimum 2 results per company
     const successfulResults = volumeFilteredResults.filter(r => {
-      if (optionType === 'puts') return r.success && r.bestPutOptions.length > 0;
-      if (optionType === 'calls') return r.success && r.bestCallOptions.length > 0;
-      return r.success && (r.bestPutOptions.length > 0 || r.bestCallOptions.length > 0);
+      if (optionType === 'puts') return r.success && r.bestPutOptions.length >= 2;
+      if (optionType === 'calls') return r.success && r.bestCallOptions.length >= 2;
+      return r.success && ((r.bestPutOptions.length >= 2) || (r.bestCallOptions.length >= 2));
     });
     
     const stocksFilteredByPrice = results.length - priceFilteredResults.length;
@@ -449,7 +453,9 @@ async function screenStockWithService(
   maxStockPrice?: number,
   minAverageVolume?: number,
   optionType: 'puts' | 'calls' | 'both' = 'puts',
-  strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate'
+  strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate',
+  minOptionVolume: number = 0,
+  minOpenInterest: number = 0
 ): Promise<StockOptionsResult> {
   // Same logic as your existing screenStock function, but using the passed tradierService instance
   // instead of creating a new one each time
@@ -560,7 +566,9 @@ async function screenStockWithService(
             exactSpreads,
             minBid,
             stockPrice,
-            strikeRange
+            strikeRange,
+            minOptionVolume,
+            minOpenInterest
           );
           allFilteredPuts.push(...filteredPuts);
           console.log(`      📉 Found ${filteredPuts.length} matching puts`);
@@ -574,7 +582,9 @@ async function screenStockWithService(
             exactSpreads,
             minBid,
             stockPrice,
-            strikeRange
+            strikeRange,
+            minOptionVolume,
+            minOpenInterest
           );
           allFilteredCalls.push(...filteredCalls);
           console.log(`      📈 Found ${filteredCalls.length} matching calls`);

@@ -119,7 +119,9 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
       state.minAverageVolume,
       state.optionType,
       state.sectorFilter,
-      state.strikeRange
+      state.strikeRange,
+      state.minOptionVolume,
+      state.minOpenInterest
     );
   }, [
     runScreener,
@@ -132,7 +134,9 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
     state.minAverageVolume,
     state.optionType,
     state.sectorFilter,
-    state.strikeRange
+    state.strikeRange,
+    state.minOptionVolume,
+    state.minOpenInterest
   ]);
 
   return (

@@ -184,9 +184,9 @@ export default function ScreenerControls({
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* First Row - 5 columns */}
-      <div className="grid grid-cols-5 gap-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* Main Controls Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
         {/* Expiration Filter */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
@@ -369,8 +369,8 @@ export default function ScreenerControls({
         </div>
 
         {/* Min Option Volume */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
             Min Option Volume
           </label>
@@ -381,14 +381,14 @@ export default function ScreenerControls({
             value={minOptionVolume === 0 ? '' : minOptionVolume}
             onChange={(e) => setMinOptionVolume(e.target.value === '' ? 0 : Number(e.target.value))}
             placeholder="5"
-            className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
+            className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-0 focus:outline-none transition-all shadow-sm hover:shadow-md focus:shadow-md"
             disabled={loading}
           />
         </div>
 
         {/* Min Open Interest */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
             Min Open Interest
           </label>
@@ -399,48 +399,14 @@ export default function ScreenerControls({
             value={minOpenInterest === 0 ? '' : minOpenInterest}
             onChange={(e) => setMinOpenInterest(e.target.value === '' ? 0 : Number(e.target.value))}
             placeholder="25"
-            className="w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all shadow-sm"
+            className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-0 focus:outline-none transition-all shadow-sm hover:shadow-md focus:shadow-md"
             disabled={loading}
           />
         </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            Actions
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={handleRunScreener}
-              disabled={loading}
-              className="flex-1 h-11 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed text-sm"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Scanning...
-                </div>
-              ) : (
-                'Run Screen'
-              )}
-            </button>
-            {onClearFilters && (
-              <button
-                onClick={handleClearFilters}
-                disabled={loading}
-                className="h-11 px-4 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg transition-all duration-200 font-semibold shadow-sm hover:shadow-md disabled:cursor-not-allowed text-sm"
-                title="Clear all filters and results"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
       </div>
-      
-      {/* Second Row - 5 columns */}
-      <div className="grid grid-cols-5 gap-4 pt-6 border-t border-gray-200">
+
+      {/* Additional Controls */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 pt-6 border-t border-gray-100">
         {/* Custom Symbols */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 h-6">
@@ -660,6 +626,39 @@ export default function ScreenerControls({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Action Buttons - Clean and prominent */}
+      <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+        {onClearFilters && (
+          <button
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-6 py-3 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed disabled:text-gray-400"
+            title="Clear all filters and results"
+          >
+            Clear Filters
+          </button>
+        )}
+        <button
+          onClick={handleRunScreener}
+          disabled={loading}
+          className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed transform hover:scale-105 disabled:transform-none"
+        >
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Scanning Options...
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Run Screener
+            </div>
+          )}
+        </button>
       </div>
     </div>
   );

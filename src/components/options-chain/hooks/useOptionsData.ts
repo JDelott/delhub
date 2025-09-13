@@ -94,7 +94,9 @@ export const useOptionsData = ({
     minAverageVolume: number,
     optionType: 'puts' | 'calls',
     sectorFilter: string,
-    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate'
+    strikeRange: 'tight' | 'moderate' | 'wide' | 'extended' = 'moderate',
+    minOptionVolume: number = 0,
+    minOpenInterest: number = 0
   ) => {
     if (selectedSpreads.length === 0) {
       setError('Please select at least one spread value');
@@ -120,13 +122,15 @@ export const useOptionsData = ({
         symbols,
         exactSpreads: selectedSpreads,
         minBid,
-        maxResults: 50,
+        maxResults: 75,
         expirationFilter,
         priceFilter,
         maxStockPrice: maxStockPrice > 0 ? maxStockPrice : undefined,
         minAverageVolume: minAverageVolume > 0 ? minAverageVolume : undefined,
         optionType,
-        strikeRange
+        strikeRange,
+        minOptionVolume: minOptionVolume > 0 ? minOptionVolume : undefined,
+        minOpenInterest: minOpenInterest > 0 ? minOpenInterest : undefined
       };
       
       const response = await fetch('/api/options/screener', {
