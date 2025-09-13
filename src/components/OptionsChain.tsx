@@ -104,10 +104,14 @@ export default function OptionsChain({ className = '' }: OptionsChainProps) {
     }
   }, [state.viewMode, state.selectedExpiration, fetchFilteredPuts, state.symbol, state.selectedSpreads, state.minBid, state.strikeRange]);
 
-  const handleRunScreener = useCallback(async () => {
+  const handleRunScreener = useCallback(async (spreads?: number[]) => {
+    // Use passed spreads or fall back to state spreads
+    const spreadsToUse = spreads || state.selectedSpreads;
+    console.log('OptionsChain handleRunScreener using spreads:', spreadsToUse);
+    
     await runScreener(
       state.customSymbols,
-      state.selectedSpreads,
+      spreadsToUse,
       state.minBid,
       state.expirationFilter,
       state.priceFilter,

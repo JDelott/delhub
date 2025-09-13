@@ -23,7 +23,7 @@ interface ScreenerControlsProps {
   strikeRange: 'tight' | 'moderate' | 'wide' | 'extended';
   setStrikeRange: (range: 'tight' | 'moderate' | 'wide' | 'extended') => void;
   loading: boolean;
-  onRunScreener: () => void;
+  onRunScreener: (spreads?: number[]) => void;
   onClearFilters?: () => void;
 }
 
@@ -56,27 +56,36 @@ export default function ScreenerControls({
     // Initialize with global state but then manage independently
     return Array.isArray(selectedSpreads) ? [...selectedSpreads] : [0.15];
   });
-
-  // Sync local state with global state only when global state changes from external sources
+  
+  // Use ref to always get current state value (fixes "one behind" issue)
+  const localSelectedSpreadsRef = React.useRef(localSelectedSpreads);
   React.useEffect(() => {
-    if (Array.isArray(selectedSpreads) && selectedSpreads.length > 0) {
-      setLocalSelectedSpreads([...selectedSpreads]);
-    }
-  }, [selectedSpreads]);
+    localSelectedSpreadsRef.current = localSelectedSpreads;
+  }, [localSelectedSpreads]);
+
+  // No syncing with global state - keep dropdown completely independent
 
   const toggleSpread = (spread: number) => {
     setLocalSelectedSpreads((prev) => {
       const newSpreads = prev.includes(spread) 
         ? prev.filter((s) => s !== spread)
         : [...prev, spread].sort((a, b) => a - b);
+      
+      // Update ref immediately to prevent "one behind" issue
+      localSelectedSpreadsRef.current = newSpreads;
+      console.log('Updated spreads:', newSpreads);
+      
       return newSpreads;
     });
   };
 
-  // Update global state only when running screener
+  // Update global state only when running screener - use ref to get current value
   const handleRunScreener = () => {
-    setSelectedSpreads(localSelectedSpreads);
-    onRunScreener();
+    const currentSpreads = localSelectedSpreadsRef.current;
+    console.log('Using current spreads:', currentSpreads);
+    setSelectedSpreads(currentSpreads);
+    // Pass current spreads directly to avoid async state update issues
+    onRunScreener(currentSpreads);
   };
 
   // Handle clear filters - reset both local and global state
